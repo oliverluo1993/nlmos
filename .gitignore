@@ -1,0 +1,8 @@
+*.bbl
+*.blg
+*.aux
+*.dvi
+*.log
+*.pdf
+*.ps
+*Notes.bib

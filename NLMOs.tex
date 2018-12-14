@@ -1,0 +1,180 @@
+\documentclass[aps,prl,reprint,amsmath,amssymb]{revtex4-1}
+
+\usepackage{epsfig,color,graphicx}
+%\usepackage{algorithmic}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+% Mathematical symbols
+\newcommand*{\imi}{i} % imaginary i
+\newcommand*{\E}{\mathrm{e}}
+% DIRAC NOTATION
+% bra-ket vectors
+\newcommand{\ket}[1]{\ensuremath{\vert #1 \rangle}}
+\newcommand{\bra}[1]{\ensuremath{\langle #1 \vert}}
+\newcommand{\braket}[2]{\ensuremath{\langle #1 \vert #2 \rangle}} % bra-ket inner product
+\newcommand{\ketbra}[2]{\ensuremath{\vert #1 \rangle \langle #2 \vert}} % ket-bra outer product
+% operators
+\newcommand{\op}[1]{\ensuremath{\hat{#1}}} % operator
+\newcommand{\opsb}[2]{\ensuremath{\hat{#1}_{#2}}} % operator with subscript
+\newcommand{\opsp}[2]{\ensuremath{\hat{#1}^{#2}}} % operator with superscript
+
+% left-right arrow with text above it
+\makeatletter
+\newcommand\xleftrightarrow[2][]{%
+  \ext@arrow 9999{\longleftrightarrowfill@}{#1}{#2}}
+\newcommand\longleftrightarrowfill@{%
+  \arrowfill@\leftarrow\relbar\rightarrow}
+\makeatother
+
+% inexact differential
+\def\dbar{{\mathchar'26\mkern-12mu d}}
+
+%partial derivative with some variables held constant
+\newcommand{\pdc}[3]{\ensuremath{\left( \frac{\partial #1}{\partial #2} \right)_{#3}}}
+\newcommand{\pddc}[3]{\ensuremath{\left( \frac{{\partial}^2 {#1}}{\partial {#2}^2} \right)_{#3}}}
+
+%average
+\newcommand{\av}[1]{\ensuremath{\left\langle{#1}\right\rangle}} % operator
+
+%text color
+\newcommand{\new}{\color{red}}
+\newcommand{\blue}{\color{blue}}
+\newcommand{\old}{\color{black}}
+
+\begin{document}
+
+\bibliographystyle{apsrev}
+
+
+\title{
+Direct unconstrained localization of nonorthogonal one-electron orbitals
+}
+
+\author{Ziling Luo}
+\email{ziling.luo@mail.mcgill.ca}
+\author{Rustam Z. Khaliullin}
+\email{rustam.khaliullin@mcgill.ca}
+\affiliation{Department of Chemistry, McGill University, 801 Sherbrooke St. West, Montreal, QC H3A 0B8, Canada}
+
+\date{\today}
+
+\begin{abstract}
+Spatially localized one-electron orbitals are of tremendous importance in electronic structure theory of materials and molecular systems. 
+They are used to interpret chemical bonding and speed up computations. 
+\end{abstract}
+
+\maketitle
+
+\section{Introduction} 
+
+Why LMOs and maximally localized Wannier functions (MLWFs) are important?
+
+Why NLMOs and nonorthogonal Wannier functions are used? What are their advantages compared to their orthogonal counterparts?
+
+What methods exists for constructing NLMOs? 
+
+Why do we introduce a new method? What are do we hope to achieve?
+
+Brief idea of our approach: unconstrained fully automatic localization with a penalty that prevents orbital collapse.
+
+Take a look at this paper. 
+Do they do anything similar to our method? 
+``Anikin and co-workers~\cite{anikin2004} used a penalty function to enforce non-orthogonality while solving for the system variationally.''
+% N. A. Anikin, V. M. Anisimov, V. L. Bugaenko and A. M. Andreyev, J. Chem. Phys., 2004, 121, 1266.
+
+
+\section{Theory and algorithm}
+
+In addition to the conventional localization function
+%
+\begin{equation}
+\begin{split}
+\Omega_L (\mathbf{T}) = ,
+\end{split}
+\end{equation}
+%
+the objective function proposed in this work contains a term that penalizes unphysical states with linearly dependent occupied orbitals:
+%
+\begin{equation}
+\begin{split}
+\Omega(\mathbf{T}) = \Omega_L(\mathbf{T}) - c_V \log \det (\sigma),
+\end{split}
+\end{equation}
+%
+where ... $\sigma = \mathbf{T}^\dagger \mathbf{ S T}$ is the NLMO overlap, and $c_V > 0$ is a penalty strength.
+
+Why do we need to keep orbitals normalized?
+
+To keep orbitals normalized we express NLMO coefficients in term of variational parameters $\mathbf{A}$
+%
+\begin{equation}
+\begin{split}
+{T^{\mu}}_{i} = A^{\mu}_{i} ({A^{\lambda}}_{i} S_{\lambda\nu}{A^{\nu}}_{i})^{-\frac{1}{2}}
+\end{split}
+\end{equation}
+
+This approach converts the localization of NLMOs into an unconstrained and straightforward optimization problem. There exists multiple algorithms to carry out the optimization. In this work, we utilize a simple conjugate gradient algorithm shown in Figure~\ref{fig:cg}.
+
+
+\begin{figure}
+\begin{algorithm}[H]
+  \caption{Conjugate gradient minimization of $\Omega$}
+  \label{alg:cg}
+   \begin{algorithmic}[1]
+   	\State Input $t$ \Comment{Time step}
+   	\State Input $N$ \Comment{Number of AIMD steps}
+   	\State Input $T$ \Comment{Temperature}
+   	\State Input $\gamma$ \Comment{Langevin damping coefficient}
+   	\State Input $\Delta$ \Comment{Compensation for imperfect forces} \label{line:delta1}
+   	\State Input $A$ \Comment{Number of atoms}
+	\State $\tau\gets 0$ \Comment{Current time step}
+	\State Allocate $\mathbf{r}, \mathbf{p}, \mathbf{f}$ \Comment{Matrices: positions, momenta, forces}
+   	\State Input $\mathbf{r}$
+	\State $\mathbf{p} \gets \text{Maxwell-Boltzmann}(T)$ \Comment{Generate initial momenta}
+	\State $\mathbf{f} \gets \text{ALMO.Force}(\mathbf{r},\tau)$ \Comment{Compute forces (Algorithm~\ref{alg:force})}
+	\For{$\tau \gets 1$ to $N$} \Comment{Time loop}
+		\For{$i \gets 1$ to $A$} \Comment{Loop over atoms}
+			\State $\sigma_i \gets 2 k_B T m_i t (\gamma + \Delta)$  \label{line:delta2}
+			\State $\vec{w}_{i} \gets \mathcal{N}(0,\sigma_i)$ \Comment{Vector of random numbers}
+			\State $\vec{r}_i \gets \vec{r}_i + \mathrm{e}^{-\gamma t/2} \frac{t}{m_i}\vec{p}_i + \mathrm{e}^{-\gamma t/4} \frac{t}{2 m_i} \left( t \vec{f}_i + \vec{w}_i \right) $
+			\State $\vec{p}_i \gets \vec{p}_i + \mathrm{e}^{\gamma t/2} \frac{t}{2} \vec{f}_i$ \Comment{Start updating momenta}
+		\EndFor
+		\State $\mathbf{f} \gets \text{ALMO.Force}(\mathbf{r},\tau)$ \Comment{Update forces}
+		\For{$i \gets 1$ to $A$}
+%			\State $\vec{p}_i \gets \mathrm{e}^{-\gamma t} \left( \vec{p}_i + \mathrm{e}^{\gamma t/2} \frac{t}{2} \vec{f}_i \right) + \mathrm{e}^{-\gamma t/2} \vec{w}_i $   \Comment{Update momenta}
+			\State $\vec{p}_i \gets \vec{p}_i + \mathrm{e}^{\gamma t/2} \frac{t}{2} \vec{f}_i $
+			\State $\vec{p}_i \gets \mathrm{e}^{-\gamma t} \vec{p}_i + \mathrm{e}^{-\gamma t/2} \vec{w}_i $   \Comment{Update momenta}
+		\EndFor
+	\EndFor
+   \end{algorithmic}
+\end{algorithm}
+\caption{\label{fig:cg} Optimization algorithm.}
+\end{figure}
+
+
+\section{Results and discussion}
+
+Present localization paths for two systems.
+
+Present a table that compares orthogonal and nonorthogonal results, determinants.
+
+Show localization orbitals for a big molecule, molecule with non-intuitive electronic structure, a material.
+
+
+\section{Conclusions}
+
+
+\section{Computational details}
+
+
+\section{Acknowledgments} 
+
+The research was funded by the Natural Sciences and Engineering Research Council of Canada (NSERC) through Discovery
+Grants (RGPIN-2016-0505). The authors are grateful to Compute Canada and, in particular, the McGill HPC Centre for computer time.
+
+\bibliography{inflation}
+
+% N. A. Anikin, V. M. Anisimov, V. L. Bugaenko and A. M. Andreyev, J. Chem. Phys., 2004, 121, 1266.
+
+\end{document}
