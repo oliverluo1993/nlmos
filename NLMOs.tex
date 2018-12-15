@@ -86,35 +86,54 @@ Do they do anything similar to our method?
 
 \section{Theory and algorithm}
 
-In addition to the conventional localization function
+The localization procedure starts with the occupied one-electron states $\ket{i_0}$ obtained in the self-consistent filed procedure. These orbitals are not assumed to be canonical or even orthogonal. The trial NLMOs are expressed in terms of the known initial states as
 %
 \begin{equation}
 \begin{split}
-\Omega_L (\mathbf{T}) = ,
+\ket{j} = \ket{i_0} {A^i}_j  
 \end{split}
 \end{equation}
 %
-the objective function proposed in this work contains a term that penalizes unphysical states with linearly dependent occupied orbitals:
+The conventional tensor notation is used to work with the nonorthogonal orbitals~\cite{head1998tensor}: covariant quantities are denoted with subscripts, contravariant quantities with superscripts, and summation is implied over the same orbital indices.
+
+The objective function proposed in this work contains two terms: the conventional localization functional $\Omega_L$ and a term that penalizes unphysical states with linearly dependent occupied orbitals:
 %
 \begin{equation}
 \begin{split}
-\Omega(\mathbf{T}) = \Omega_L(\mathbf{T}) - c_V \log \det (\sigma),
+\Omega(\mathbf{A}) = \Omega_L(\mathbf{A}) - c_V \log \det (\sigma),
 \end{split}
 \end{equation}
 %
-where ... $\sigma = \mathbf{T}^\dagger \mathbf{ S T}$ is the NLMO overlap, and $c_V > 0$ is a penalty strength.
-
-Why do we need to keep orbitals normalized?
-
-To keep orbitals normalized we express NLMO coefficients in term of variational parameters $\mathbf{A}$
+where $c_V > 0$ is a penalty strength and $\sigma$ is the overlap matrix of NLMOs 
 %
 \begin{equation}
 \begin{split}
-{T^{\mu}}_{i} = A^{\mu}_{i} ({A^{\lambda}}_{i} S_{\lambda\nu}{A^{\nu}}_{i})^{-\frac{1}{2}}
+\sigma_{kl} = \braket{k}{l} = {A^j}_k \braket{j_0}{i_0}{A^i}_l = {A^j}_k \sigma_{ji}^0{A^i}_l .
+%= (\mathbf{A}^\dagger \mathbf{T}^\dagger \mathbf{ S T A})_{kl},
+\end{split}
+\end{equation}
+%
+%where Greek indices denote basis set functions \ket{\mu} with overlap and T fixed coefficients of the initial one-electron states.
+%
+If the NLMOs are normalized the determinant of $\sigma$ varies from 1 for orthogonal states to 0 for linearly dependent states. The penalty function---the key ingredient of the proposed method---varies from 0 to $+\infty$, respectively, making linearly dependent state inaccessible in the optimization if $c_V$ is set to be finite. A normalization constraint can be imposed on NLMOs if their coefficients are expressed in terms of variational parameters $\mathbf{a}$
+%
+\begin{equation}
+\begin{split}
+{A^i}_j = {a^i}_{j} ({a^k}_{j} \sigma^0_{kl}{a^l}_{j})^{-\frac{1}{2}}
 \end{split}
 \end{equation}
 
-This approach converts the localization of NLMOs into an unconstrained and straightforward optimization problem. There exists multiple algorithms to carry out the optimization. In this work, we utilize a simple conjugate gradient algorithm shown in Figure~\ref{fig:cg}.
+This approach converts the localization of NLMOs into an unconstrained and straightforward optimization problem. There exists multiple algorithms to carry out the optimization. In this work, we utilize a simple conjugate gradient algorithm summarized in Figure~\ref{fig:cg}.
+
+We chose the following localization functional to implement our procedure 
+%
+\begin{equation}
+\begin{split}
+\Omega_L(\mathbf{A}) =,
+\end{split}
+\end{equation}
+%
+where. This functional is used for both periodic and gas-phase systems. In the latter case, it is equivalent to the Boys functional.
 
 
 \begin{figure}
@@ -155,12 +174,15 @@ This approach converts the localization of NLMOs into an unconstrained and strai
 
 \section{Results and discussion}
 
-Present localization paths for two systems.
+Present localization paths for two systems: simple and challenging. Use $c_V$ values determined by our automatic procedure. Remember that the whole point of creating this method was to make the localization black-box.
 
-Present a table that compares orthogonal and nonorthogonal results, determinants.
+Can we localize virtual orbitals?
 
-Show localization orbitals for a big molecule, molecule with non-intuitive electronic structure, a material.
+Present a table that compares orthogonal and nonorthogonal results, final determinants.
 
+Show localization orbitals for a big molecule, molecule with non-intuitive electronic structure, and a periodic material.
+
+Discuss existing issues: convergence rate, sigma-pi mixing, orthogonalization tails, sparsity of the final coefficients. Mention possible future work to resolve them.
 
 \section{Conclusions}
 
