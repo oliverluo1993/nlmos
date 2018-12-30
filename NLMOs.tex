@@ -68,15 +68,69 @@ They are used to interpret chemical bonding and speed up computations.
 
 \section{Introduction} 
 
-Why LMOs and maximally localized Wannier functions (MLWFs) are important?
+1. Why LMOs and maximally localized Wannier functions (MLWFs) are important?
 
-Why NLMOs and nonorthogonal Wannier functions are used? What are their advantages compared to their orthogonal counterparts?
+The current electronic structure calculations are based on molecular orbitals, which electrons are described as a set of delocalized canonical molecular orbitals (CMOs).
 
-What methods exists for constructing NLMOs? 
+While in the classical chemical bonding theory, the localized distributed electrons are implemented to describe the bonding properties, so that localized molecular orbitals (LMOs) have been considered for decades in quantum chemistry.
+
+Also, LMOs functions are better method to treat correlation energy calculations, since they are localized in different regions in the molecules/materials.
+
+More importantly, LMOs play an important role in the linear-scaling simulations due to it can accommodate more localized distributions for electrons in space.
+
+The LMOs are equivalent as Wannier functions (WFs) in the solid state. 
+
+Maximally localized Wannier functions (MLWFs) are the minimized spread WFs by refining the degree of freedom.
+
+2. Why NLMOs and nonorthogonal Wannier functions are used? What are their advantages compared to their orthogonal counterparts?
+
+LMOs can be represented either by orthogonal localized molecular orbitals (OLMOs) or by nonorthogonal localized molecular orbitals (NLMOs).
+
+Early study and research on generating LMOs focused on the OLMOs, which can be obtained through unitary transformations from CMOs based on extremizing the localization functions, such as Boys-Foster, Edmiston-Ruedenberg, Pipek-Mezey, and Von Niessen methods.
+
+Due to the orthogonality condition of the OLMOs, the "orthogonalization tails" outside the localization center can be observed in the generated OLMOs.
+
+These "orthogonalization tails" reduce the localization and complicated the electronic structural information transformation from one system to another.
+
+Recently, the generation of NLMOs has been explored to reduce those tails.
+
+Since NLMOs are obtained by nonsingular transformation from CMOs without the orthogonality condition, more degrees of freedom are available in the generation of NLMOs. 
+
+We would expect not only NOLMOs provide more localized molecular orbitals than OLMOs but also achieve more accurate results by using smaller cutoff radii.
+
+Recent researches proposed that NLMOs are about $10-30 \%$ more compact than OLMOs.
+
+3. What methods exists for constructing NLMOs? 
+
+More effort has been devoted to construct NLMOs recently.
+
+The concept of NLMOs was firs introduced by Anderson and Diner et al.
+
+Several efforts have been made to develop the method to construct NLMOs.
+
+One way to construct NLMOs is to employ the variational optimization by restricting the variational space to a local space.
+
+The NLMO is then expanded in the variational space, which helps to eliminate the long-range tails.
+
+However, this approach may introduce error due to the basis set truncation and result in the very approximation NLMOs because the choice of the local space may be different from the true localization region.
+
+Other studies proposed another method to obtain NLMOs by linear transformation of CMOs with relaxation of the orthogonality constraint.
+
+The limitation of this method is that the final MOs either are still fairly orthogonal and similar localization compared with OLMOs or lead to collapse on to each other due to the linear dependence between the orbitals.
+
+To overcome the collapse problem, Yang and co-workers  developed a method to construct NLMOs by minimization of the spread functional with predefined centroids obtained from the corresponding OLMOs or "chemical intuition".
+
+While this method solve the linear dependence problem, it still needs more computational efforts to construct OLMOs centroids and to know the bonding properties in advance by using "chemical intuition".
 
 Why do we introduce a new method? What are do we hope to achieve?
 
+In this paper, we propose a fully black box method to construct the NLMOs without the need of predefined centroids.
+
 Brief idea of our approach: unconstrained fully automatic localization with a penalty that prevents orbital collapse.
+
+With the new approach, NLMOs can be obtained by automatic minimization the unconstrained spread functional with the volume penalty functional which prevents the orbital collapse.
+
+We successfully developed this new black-box approach to obtain NLMOs and achieved more compact and nonorthogonal MOs compare with OLMOs.
 
 Take a look at this paper. 
 Do they do anything similar to our method? 
@@ -84,9 +138,9 @@ Do they do anything similar to our method?
 % N. A. Anikin, V. M. Anisimov, V. L. Bugaenko and A. M. Andreyev, J. Chem. Phys., 2004, 121, 1266.
 
 
-\section{Theory and algorithms}
+\section{Theory and algorithm}
 
-The localization procedure starts with the occupied one-electron states $\ket{i_0}$ obtained in the self-consistent filed procedure. These orbitals are not assumed to be canonical or even orthogonal. The trial NLMOs are expressed in terms of these known initial states as
+The localization procedure starts with the occupied one-electron states $\ket{i_0}$ obtained in the self-consistent filed procedure. These orbitals are not assumed to be canonical or even orthogonal. The trial NLMOs are expressed in terms of the known initial states as
 %
 \begin{equation}
 \begin{split}
@@ -96,16 +150,15 @@ The localization procedure starts with the occupied one-electron states $\ket{i_
 %
 The conventional tensor notation is used to work with the nonorthogonal orbitals~\cite{head1998tensor}: covariant quantities are denoted with subscripts, contravariant quantities with superscripts, and summation is implied over the same orbital indices.
 
-The objective function proposed in this work contains two terms: a conventional localization functional $\Omega_L$ and a term that penalizes unphysical states with linearly dependent occupied orbitals $\Omega_V$:
+The objective function proposed in this work contains two terms: the conventional localization functional $\Omega_L$ and a term that penalizes unphysical states with linearly dependent occupied orbitals:
 %
-\begin{equation} \label{eq:fun-pen}
+\begin{equation}
 \begin{split}
-\Omega(\mathbf{A}) = \Omega_L(\mathbf{A}) + c_V \Omega_V(\mathbf{A}), \\
-\Omega_V(\mathbf{A}) = - \log \det \left[ \sigma (\mathbf{A}) \right]
+\Omega(\mathbf{A}) = \Omega_L(\mathbf{A}) - c_V \log \det (\sigma),
 \end{split}
 \end{equation}
 %
-where $c_V > 0$ is the relative penalty strength and $\sigma$ is the overlap matrix of NLMOs 
+where $c_V > 0$ is a penalty strength and $\sigma$ is the overlap matrix of NLMOs 
 %
 \begin{equation}
 \begin{split}
@@ -116,7 +169,7 @@ where $c_V > 0$ is the relative penalty strength and $\sigma$ is the overlap mat
 %
 %where Greek indices denote basis set functions \ket{\mu} with overlap and T fixed coefficients of the initial one-electron states.
 %
-If the NLMOs are normalized the determinant of $\sigma$ varies from 1 for orthogonal states to 0 for linearly dependent states. The penalty function---the key ingredient of the proposed method---varies from 0 to $+\infty$, respectively, making linearly dependent state inaccessible if $c_V$ is finite. A normalization constraint can be imposed on NLMOs if their coefficients are expressed in terms of variational parameters $\mathbf{a}$
+If the NLMOs are normalized the determinant of $\sigma$ varies from 1 for orthogonal states to 0 for linearly dependent states. The penalty function---the key ingredient of the proposed method---varies from 0 to $+\infty$, respectively, making linearly dependent state inaccessible in the optimization if $c_V$ is set to be finite. A normalization constraint can be imposed on NLMOs if their coefficients are expressed in terms of variational parameters $\mathbf{a}$
 %
 \begin{equation}
 \begin{split}
@@ -124,137 +177,88 @@ If the NLMOs are normalized the determinant of $\sigma$ varies from 1 for orthog
 \end{split}
 \end{equation}
 
-This approach converts the localization of NLMOs into an unconstrained and straightforward optimization problem. 
+This approach converts the localization of NLMOs into an unconstrained and straightforward optimization problem. There exists multiple algorithms to carry out the optimization. In this work, we utilize a simple conjugate gradient algorithm summarized in Figure~\ref{fig:cg}.
 
-We chose/adopted the following localization functional to implement our procedure 
+We chose the following localization functional to implement our procedure 
 %
-\begin{equation} \label{eq:fun-loc}
+\begin{equation}
 \begin{split}
-\Omega_L(\mathbf{A}) &= - \sum_K \sum_k \omega_K \log \vert {A^i}_k B^K_{ij} A^j_k \vert^2, \\
-B^K_{ij} &= \bra{i_0} \E^{\imi \mathbf{G}_K \cdot \mathbf{\op{r}}} \ket{j_0}
+\Omega_L(\mathbf{A}) =,
 \end{split}
 \end{equation}
 %
-%RZZK - minus sign ensures minimization vs maximazation
-%RZZK - use other functions?
-%RZZK - Explain how Boys functions are obtained.
-where . This functional is used for both periodic and gas-phase systems~\cite{berghold2000general}. In the latter case, it is equivalent to the Boys functional.
-% berghold2000general --- PHYSICAL REVIEW B VOLUME 61, NUMBER 15
+where. This functional is used for both periodic and gas-phase systems. In the latter case, it is equivalent to the Boys functional.
 
-There exists multiple algorithms to carry out the optimization. In this work, we utilize a simple conjugate gradient algorithm summarized in Figure~\ref{fig:cg}. 
-
-The algorithm requires the gradient of $\Omega$ with respect to variational parameters $\mathbf{a}$.
-%
-\begin{equation} \label{eq:grad}
-\begin{split}
-{G_i}^j \equiv \frac{\partial \Omega}{\partial {a^i}_j} &= fff \frac{\partial \Omega}{\partial {A^k}_l}
-\end{split}
-\end{equation}
-%
-
-%
-\begin{equation} \label{eq:grad}
-\begin{split}
-\frac{\partial \Omega_L}{\partial {A^k}_l} &= 
-\end{split}
-\end{equation}
-%
-
-%
-\begin{equation} \label{eq:grad}
-\begin{split}
-\frac{\partial \Omega_V}{\partial {A^k}_l} &= 
-\end{split}
-\end{equation}
-%
 
 \begin{figure}
 \begin{algorithm}[H]
   \caption{Conjugate gradient minimization of $\Omega$}
   \label{alg:cg}
    \begin{algorithmic}[1]
-   	%\Procedure{ALMO.Stage2}{$\mathbf{r}, \tau, \mathbf{T}_0$}
-	\State Input $\epsilon_{\text{CG}}$ \Comment{Localization convergence threshold}
-	%\State Input $N_{\text{CG}}$, $N_{\text{Outer}}$ \Comment{Max CG, outer iterations}
-	\State Input $\epsilon_\text{Det}$ \Comment{Minimum allowed NLMO determinant}
-	%\State $\mathbf{\sigma,R} \gets \text{Eq.\ref{eq:dm}}(\mathbf{T}_{0})$
-	%\State $\mathbf{K}^{R_c} \gets ([\mathbf{S}]^{R_c})^{-1}$ \Comment{Inverted blocked AO overlap}
-   	\State Input $\mathbf{T}_0$ \Comment{Coefficients of the initial states $\ket{i_0}$}
-   	\State Input $\mathbf{S}$ \Comment{Basis set overlap}
-   	\State Input $\mathbf{L}^K$ \Comment{Basis set representation of the localization operator} 
-   	%RZZK: Localization matrix L is not defined. Loop over K?
-   	\State $\mathbf{\sigma}_0 \gets \mathbf{T}_0^{\dagger} \mathbf{ST}_0$ \Comment{Initial orbital overlap} 
-   	\State $\mathbf{B}^{K} \gets \mathbf{T}_0^{\dagger} \mathbf{L}^K \mathbf{T}_0$ \Comment{Initial localization matrix} 
-	\State $\mathbf{a} \gets \mathbf{I}$ \Comment{Guess variational DOFs}
-	%\State Converged $\gets$ False
-	\State StopOuter $\gets$ False \Comment{Flag to exit the outer loop}
-	\State $i_{\text{Outer}} \gets 0$ \Comment{Iteration counter}
-	\Repeat \Comment{Loop to change the penalty strength}
-		\State $i_{\text{Outer}} \gets i_{\text{Outer}} + 1$ 
-		\If{$i_{\text{Outer}}>1$} \Comment{$c_V$ is initialized below}
-			\State $c_{V} \gets c_V / 2$ 
-		\EndIf
-		\State StopCG $\gets$ False \Comment{Flag to exit the CG loop}
-		\State $i_{\text{CG}} \gets 0$ \Comment{Iteration counter}
-%		\State $\beta \gets 0$ \Comment{Reset conjugation}
-		\Repeat \Comment{Fixed-penalty localization loop}
-			\State $i_{\text{CG}} \gets i_{\text{CG}} + 1$ 
-			\State $\mathbf{A} \gets \mathbf{a} \left[ \text{diagonal}(\mathbf{a}^{\dagger} \mathbf{\sigma}_0 \mathbf{a}) \right]^{-\frac{1}{2}}$ \Comment{Update NLMOs}
-			\State $\mathbf{\sigma} \gets \mathbf{A}^{\dagger}\mathbf{\sigma}_0 \mathbf{A}$ \Comment{Update overlap}
-			\State $\text{Det} \gets \text{determinant} (\mathbf{\sigma})$ \Comment{Determinant}
-			\State $\Omega_{V} \gets - \log [\text{Det}] $ \Comment{Orthogonalization functional}
-			\State $\mathbf{G}_{V} \gets \text{Eq.\ref{eq:grad-pen}}(\mathbf{A})$ \Comment{Orthogonalization gradient}
-			\State $\Omega_{L} \gets \text{Eq.\ref{eq:fun-loc}}(\mathbf{A})$ \Comment{Localization functional}
-			\State $\mathbf{G}_{L} \gets \text{Eq.\ref{eq:grad-loc}}(\mathbf{A})$ \Comment{Localization gradient}
-			\If{$i_{\text{Outer}}=1$} %RZZK: how to compute the coefficient correctly using L2 norm
-				%\State $c_{V} \gets \vert\vert \mathbf{G}_{L} \vert \vert_{2} / \vert\vert \mathbf{G}_{V} \vert \vert_{2} $ 
-				\State $c_{V} \gets \text{Tr}(\mathbf{G}_L^{\dagger} \mathbf{G}_V)/\text{Tr}(\mathbf{G}_V^{\dagger}\mathbf{G}_V)$
-			\EndIf
-			\State $\Omega \gets \Omega_{L} + c_V \Omega_{V} $ 
-			\If{$i_{\text{CG}}>1$}
-				\State $\mathbf{\Gamma} \gets \mathbf{G}$ \Comment{Save old gradient}
-			\EndIf 
-			\State $\mathbf{G} \gets \mathbf{G}_{L} + c_V \mathbf{G}_{V} $ 
-			%\State $\text{Error}_\text{CG} \gets \vert\vert \mathbf{G} \vert \vert_{\text{max}}$
-			\If{$\vert\vert \mathbf{G} \vert \vert_{\text{max}} < \epsilon_{\text{CG}}$}
-				\State StopCG $\gets$ True
-			\EndIf
-%			\If{$i_{\text{CG}}=1$ \textbf{And} $i_{\text{Outer}}=1$}
-%				\State StopCG $\gets$ False \Comment{Do first iteration}
-%			\EndIf
-			\If{\textbf{not} StopCG}
-%				\If{$i_{\text{CG}} = 1$}
-%					\State $\mathbf{P}^{R_c} \gets \text{Eq.\ref{eq:prec}}(\mathbf{F},\mathbf{M}^{R_c},\mathbf{K}^{R_c}) $\Comment{Precon.}
-%				\Else
-%					\State $\mathbf{O}_{R_c} \gets \mathbf{D}_{R_c}$ \Comment{Save old direction}
-%				\EndIf
-				\If{$i_{\text{CG}} > 1$}
-					\State $\mathbf{O} \gets \mathbf{D}$ \Comment{Save old direction}
-				\EndIf
-%				\State $\mathbf{D}_{R_c} \gets - [(\mathbf{P}^{R_c})^{-1} \mathbf{G}^{R_c}]_{R_c}$ \Comment{Precon. grad.}
-				\State $\mathbf{D} \gets - \mathbf{G}$ \Comment{Initial direction}
-				\If{$i_{\text{CG}}>1$}
-					\State $\beta \gets \text{Tr}(\mathbf{G}^{\dagger} \mathbf{D})/\text{Tr}(\mathbf{\Gamma}^{\dagger}\mathbf{O})$
-					\State $\mathbf{D} \gets \mathbf{D} + \beta \mathbf{O}$ \Comment{Search direction}
-				\EndIf 
-				\State $\alpha \gets \text{LineSearch}(\mathbf{D})$ \Comment{Step size}
-				\State $\mathbf{a}\gets \mathbf{a} + \alpha \mathbf{D}$ \Comment{Update variational DOFs}
-			\EndIf
-		\Until{StopCG} 
-		%\If{$\text{Det} < \text{Det}_{\text{Target}}$ \textbf{or} $i_{\text{Outer}} > N_{\text{Outer}}$}
-		\If{$\text{Det} < \epsilon_{\text{Det}}$}
-			\State StopOuter $\gets$ True
-		\EndIf
-	\Until{StopOuter}
-	\State $\mathbf{return}$ $\mathbf{T} \gets \mathbf{T}_0 \mathbf{A} $ \Comment{Return NLMOs coefficients}
-	%\EndProcedure
+   	\State Input $t$ \Comment{Time step}
+   	\State Input $N$ \Comment{Number of AIMD steps}
+   	\State Input $T$ \Comment{Temperature}
+   	\State Input $\gamma$ \Comment{Langevin damping coefficient}
+   	\State Input $\Delta$ \Comment{Compensation for imperfect forces} \label{line:delta1}
+   	\State Input $A$ \Comment{Number of atoms}
+	\State $\tau\gets 0$ \Comment{Current time step}
+	\State Allocate $\mathbf{r}, \mathbf{p}, \mathbf{f}$ \Comment{Matrices: positions, momenta, forces}
+   	\State Input $\mathbf{r}$
+	\State $\mathbf{p} \gets \text{Maxwell-Boltzmann}(T)$ \Comment{Generate initial momenta}
+	\State $\mathbf{f} \gets \text{ALMO.Force}(\mathbf{r},\tau)$ \Comment{Compute forces (Algorithm~\ref{alg:force})}
+	\For{$\tau \gets 1$ to $N$} \Comment{Time loop}
+		\For{$i \gets 1$ to $A$} \Comment{Loop over atoms}
+			\State $\sigma_i \gets 2 k_B T m_i t (\gamma + \Delta)$  \label{line:delta2}
+			\State $\vec{w}_{i} \gets \mathcal{N}(0,\sigma_i)$ \Comment{Vector of random numbers}
+			\State $\vec{r}_i \gets \vec{r}_i + \mathrm{e}^{-\gamma t/2} \frac{t}{m_i}\vec{p}_i + \mathrm{e}^{-\gamma t/4} \frac{t}{2 m_i} \left( t \vec{f}_i + \vec{w}_i \right) $
+			\State $\vec{p}_i \gets \vec{p}_i + \mathrm{e}^{\gamma t/2} \frac{t}{2} \vec{f}_i$ \Comment{Start updating momenta}
+		\EndFor
+		\State $\mathbf{f} \gets \text{ALMO.Force}(\mathbf{r},\tau)$ \Comment{Update forces}
+		\For{$i \gets 1$ to $A$}
+%			\State $\vec{p}_i \gets \mathrm{e}^{-\gamma t} \left( \vec{p}_i + \mathrm{e}^{\gamma t/2} \frac{t}{2} \vec{f}_i \right) + \mathrm{e}^{-\gamma t/2} \vec{w}_i $   \Comment{Update momenta}
+			\State $\vec{p}_i \gets \vec{p}_i + \mathrm{e}^{\gamma t/2} \frac{t}{2} \vec{f}_i $
+			\State $\vec{p}_i \gets \mathrm{e}^{-\gamma t} \vec{p}_i + \mathrm{e}^{-\gamma t/2} \vec{w}_i $   \Comment{Update momenta}
+		\EndFor
+	\EndFor
    \end{algorithmic}
 \end{algorithm}
-\caption{\label{fig:cg} Algorithm for the optimization of NLMOs.}
+\caption{\label{fig:cg} Optimization algorithm.}
 \end{figure}
 
 
 \section{Results and discussion}
+
+
+\begin{table}[ht]
+\caption{The Localization functional, final determinant and relative percentage of NLMOs compared with OLMOs}
+\centering
+\begin{tabular}{c c c c c}
+\hline\hline
+Molecules & CMO &  OLMO$(\%)$ & NLMO$(\%)$ & Final Determinant \\
+\hline
+H$_2$O& 363 & 288 (20.5) & 230 (20.3) & 0.263 \\ 
+C$_3$H$_6$ & 2259 & 883 (60.9) & 747 (15.4) & 1.131E-06 \\ 
+B$_2$H$_6$ & 1727 & 676 (60.9) & 630 (6.7) & 0.718 \\ 
+C$_6$H$_6$  & 5676 & 1727 (69.6) & 1157 (33.0) & 5.721E-06 \\ 
+C$_7$H$_{16}$ & 20016 & 2220 (88.9) & 1953 (12.0) & 0.122 \\ 
+C$_2$B$_{10}$H$_{12}$ & 11830 & 3432 (71.0) & 2813 (18.1) & 0.004 \\ 
+C$_{20}$H$_{42}$ & 245277 & 6160 (97.5) & 5405 (12.2) & 0.003 \\ 
+C$_{72}$H$_{24}$ & 351937 & 22791 (93.5) & 15773 (30.8) & 1.925E-07 \\ 
+Average & & 70.4 & 18.6 & \\
+\hline
+\end{tabular}
+\label{table:nonlin}
+\end{table}
+
+\begin{figure}[htbp]
+\includegraphics[scale=0.5]{water.png} 
+  \caption{The localization function vs Volume penalty coefficient of water molecule}
+\end{figure}
+
+\begin{figure}[htbp]
+\includegraphics[scale=0.5]{C20H42.png} 
+  \caption{The localization function vs Volume penalty coefficient of C$_{20}$H$_{42}$ molecule}
+\end{figure}
 
 Present localization paths for two systems: simple and challenging. Use $c_V$ values determined by our automatic procedure. Remember that the whole point of creating this method was to make the localization black-box.
 
@@ -265,8 +269,6 @@ Present a table that compares orthogonal and nonorthogonal results, final determ
 Show localization orbitals for a big molecule, molecule with non-intuitive electronic structure, and a periodic material.
 
 Discuss existing issues: convergence rate, sigma-pi mixing, orthogonalization tails, sparsity of the final coefficients. Mention possible future work to resolve them.
-
-TODO: Visualize an xyz file with localization centers to make sure NLMOs are physical. Compute the $c_V$ coefficient correctly the equation to minimize the L2 norm of the gradient.
 
 \section{Conclusions}
 
