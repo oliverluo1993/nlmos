@@ -168,6 +168,15 @@ The algorithm requires the gradient of $\Omega$ with respect to variational para
 \end{equation}
 %
 
+How to choose the coefficient? $Grad = A + c B$. Choose c that minimizes the squared norm of the Grad to get
+%
+\begin{equation} \label{eq:grad}
+\begin{split}
+c = - \frac{Trace (A^{\dagger} B)}{Trace(B^{\dagger} B)}  
+\end{split}
+\end{equation}
+%
+
 \begin{figure}
 \begin{algorithm}[H]
   \caption{Conjugate gradient minimization of $\Omega$}
