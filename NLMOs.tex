@@ -108,7 +108,7 @@ We successfully developed this new black-box approach to obtain NLMOs and achiev
 
 \section{Theory and algorithms}
 
-The localization procedure starts with the occupied one-electron states $\ket{i_0}$ obtained in the self-consistent filed procedure. These orbitals are not assumed to be canonical or even orthogonal. The trial NLMOs are expressed in terms of these known initial states as
+The localization procedure starts with a set of occupied (or ZZZ virtual?) one-electron states $\ket{i_0}$. These orbitals are not assumed to be canonical or even orthogonal. The trial NLMOs are expressed in terms of these known initial states as
 %
 \begin{equation}
 \begin{split}
@@ -118,7 +118,7 @@ The localization procedure starts with the occupied one-electron states $\ket{i_
 %
 The conventional tensor notation is used to work with the nonorthogonal orbitals~\cite{head1998tensor}: covariant quantities are denoted with subscripts, contravariant quantities with superscripts, and summation is implied over the same orbital indices.
 
-The objective function proposed in this work contains two terms: a conventional localization functional $\Omega_L$ and a term that penalizes unphysical states with linearly dependent occupied orbitals $\Omega_V$:
+The objective function minimized in this work contains two terms: a conventional localization functional $\Omega_L$ and a term that penalizes unphysical states with linearly dependent occupied orbitals $\Omega_V$:
 %
 \begin{equation} \label{eq:fun-pen}
 \begin{split}
@@ -127,7 +127,7 @@ The objective function proposed in this work contains two terms: a conventional 
 \end{split}
 \end{equation}
 %
-where $c_V > 0$ is the relative penalty strength and $\sigma$ is the overlap matrix of NLMOs 
+where $c_V > 0$ is the relative penalty strength and $\sigma$ is the NLMO overlap matrix 
 %
 \begin{equation}
 \begin{split}
@@ -138,7 +138,7 @@ where $c_V > 0$ is the relative penalty strength and $\sigma$ is the overlap mat
 %
 %where Greek indices denote basis set functions \ket{\mu} with overlap and T fixed coefficients of the initial one-electron states.
 %
-If the NLMOs are normalized the determinant of $\sigma$ varies from 1 for orthogonal states to 0 for linearly dependent states. The penalty function---the key ingredient of the proposed method---varies from 0 to $+\infty$, respectively, making linearly dependent state inaccessible if $c_V$ is finite. A normalization constraint can be imposed on NLMOs if their coefficients are expressed in terms of variational parameters $\mathbf{a}$
+If the NLMOs are normalized the determinant of $\sigma$ varies from 1 for orthogonal states to 0 for linearly dependent states. The penalty function---the key ingredient of the proposed method---varies from 0 to $+\infty$ for these two extreme cases, making linearly dependent state inaccessible in the localization procedure with finite penalty strength $c_V$. A normalization constraint can be imposed on NLMOs if their coefficients are expressed in terms of variational parameters denoted with lowercase $\mathbf{a}$
 %
 \begin{equation}
 \begin{split}
@@ -146,7 +146,7 @@ If the NLMOs are normalized the determinant of $\sigma$ varies from 1 for orthog
 \end{split}
 \end{equation}
 
-This approach converts the localization of NLMOs into an unconstrained and straightforward optimization problem. 
+The addition of the penalty term converts the localization procedure into an unconstrained and straightforward optimization problem, in which the balance. 
 
 We chose/adopted the following localization functional to implement our procedure 
 %
@@ -186,6 +186,15 @@ The algorithm requires the gradient of $\Omega$ with respect to variational para
 \begin{equation} \label{eq:grad}
 \begin{split}
 \frac{\partial \Omega_V}{\partial {A^k}_l} &= 
+\end{split}
+\end{equation}
+%
+
+How to choose the coefficient? $Grad = A + c B$. Choose c that minimizes the squared norm of the Grad to get
+%
+\begin{equation} \label{eq:grad}
+\begin{split}
+c = - \frac{Trace (A^{\dagger} B)}{Trace(B^{\dagger} B)}  
 \end{split}
 \end{equation}
 %
@@ -324,10 +333,11 @@ The relationships between the relative penalty strength with determinant and loc
 \caption{The localization function vs Volume penalty coefficient of tested molecules}
 \end{figure*}
 
-\begin{figure}[htbp]
-\includegraphics[scale=0.2]{nlmo_C2B10H12_1.pdf} 
-  \caption{The localization function vs Volume penalty coefficient of tested molecules}
-\end{figure}
+% This file is not in the repository
+%\begin{figure}[htbp]
+%\includegraphics[scale=0.2]{nlmo_C2B10H12_1.pdf} 
+%  \caption{The localization function vs Volume penalty coefficient of tested molecules}
+%\end{figure}
 
 By visualizing the generated NLMOs and OLMOS, we compare the spatial difference between them with the classical chemical bonding principles.
 We present several representative examples and show the shape of NLMOs and OLMOs.
