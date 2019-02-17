@@ -100,7 +100,11 @@ We successfully developed this new black-box approach to obtain NLMOs and achiev
 
 \section{Theory and algorithms}
 
-The localization procedure starts with a set of occupied (or ZZZ virtual?) one-electron states $\ket{i_0}$. These orbitals are not assumed to be canonical or even orthogonal. The trial NLMOs are expressed in terms of these known initial states as
+The localization procedure starts with a set of occupied (or ZZZ virtual?) one-electron states $\ket{i_0}$. 
+These orbitals are not assumed to be canonical or even orthogonal. 
+However, they are assumed to be normalized. 
+Furthermore, they must be linear independent, that is, their overlap matrix $\sigma_{ji}^0 \equiv \braket{j_0}{i_0}$ must be invertible. 
+The trial NLMOs are expressed as a linear combination of these initial states
 %
 \begin{equation}
 \begin{split}
@@ -110,98 +114,133 @@ The localization procedure starts with a set of occupied (or ZZZ virtual?) one-e
 %
 The conventional tensor notation is used to work with the nonorthogonal orbitals~\cite{head1998tensor}: covariant quantities are denoted with subscripts, contravariant quantities with superscripts, and summation is implied over the same orbital indices.
 
-The objective function minimized in this work contains two terms: a conventional localization functional $\Omega_L$ and a term that penalizes unphysical states with linearly dependent occupied orbitals $\Omega_V$:
+The objective function minimized in this work contains two terms: a conventional localization functional $\Omega_L$ and a term that penalizes unphysical states with linearly dependent occupied orbitals $\Omega_P$:
 %
 \begin{equation} \label{eq:fun-pen}
 \begin{split}
-\Omega(\mathbf{A}) = \Omega_L(\mathbf{A}) + c_V \Omega_V(\mathbf{A}), \\
-\Omega_V(\mathbf{A}) = - \log \det \left[ \sigma (\mathbf{A}) \right]
+\Omega(\mathbf{A}) = \Omega_L(\mathbf{A}) + c_P \Omega_P(\mathbf{A}), \\
+\Omega_P(\mathbf{A}) = - \log \det \left[ \sigma (\mathbf{A}) \right]
 \end{split}
 \end{equation}
 %
-where $c_V > 0$ is the relative penalty strength and $\sigma$ is the NLMO overlap matrix 
+where $c_P > 0$ is the penalty strength, $\sigma$ is the NLMO overlap matrix 
 %
 \begin{equation}
 \begin{split}
-\sigma_{kl} = \braket{k}{l} = {A^j}_k \braket{j_0}{i_0}{A^i}_l = {A^j}_k \sigma_{ji}^0{A^i}_l .
+\sigma_{kl} = \braket{k}{l} = {A^j}_k \sigma_{ji}^0{A^i}_l
 %= (\mathbf{A}^\dagger \mathbf{T}^\dagger \mathbf{ S T A})_{kl},
 \end{split}
 \end{equation}
 %
-%where Greek indices denote basis set functions \ket{\mu} with overlap and T fixed coefficients of the initial one-electron states.
-%
-If the NLMOs are normalized the determinant of $\sigma$ varies from 1 for orthogonal states to 0 for linearly dependent states. The penalty function---the key ingredient of the proposed method---varies from 0 to $+\infty$ for these two extreme cases, making linearly dependent state inaccessible in the localization procedure with finite penalty strength $c_V$. A normalization constraint can be imposed on NLMOs if their coefficients are expressed in terms of variational parameters denoted with lowercase $\mathbf{a}$
+
+If the NLMOs are normalized the determinant of $\sigma$ varies from 1 for orthogonal NLMOs to 0 for linearly dependent NLMOs. The penalty function---the key ingredient of the proposed method---varies from 0 to $+\infty$ for these two extreme cases, making linearly dependent state inaccessible in the localization procedure with finite penalty strength $c_P$. 
+% RZZK: Why sigma instead of A? quadratic penalty in terms of A (more complicated in terms of a). Why log?
+A normalization constraint can be imposed on NLMOs if their coefficients are expressed in terms of independent variational parameters denoted with lowercase $\mathbf{a}$
 %
 \begin{equation}
 \begin{split}
 {A^i}_j = {a^i}_{j} ({a^k}_{j} \sigma^0_{kl}{a^l}_{j})^{-\frac{1}{2}}
 \end{split}
 \end{equation}
+%
+The inclusion of the penalty term converts the localization procedure into an unconstrained and straightforward optimization problem. Additionally, adjusting the strength of the penalty $c_P$ enables one to achieve the right balance between the nonorthogonality and locality of the orbitals. 
+%RZK: We will demonstrate below that this flexibility is useful because a high degree of linear dependence  
+A procedure that finds the penalty strength for the desired compromise between the nonorthogonality and locality is discussed below. 
 
-The addition of the penalty term converts the localization procedure into an unconstrained and straightforward optimization problem, in which the balance. 
-
-We chose/adopted the following localization functional to implement our procedure 
+In this work, we adopted the following localization functional 
 %
 \begin{equation} \label{eq:fun-loc}
 \begin{split}
-\Omega_L(\mathbf{A}) &= - \sum_K \sum_k \omega_K \log \vert {A^i}_k B^K_{ij} A^j_k \vert^2, \\
-B^K_{ij} &= \bra{i_0} \E^{\imi \mathbf{G}_K \cdot \mathbf{\op{r}}} \ket{j_0}
+\Omega_L(\mathbf{A}) &= - \sum_K \sum_i \omega_K \log \vert z_{i}^{K} \vert^2, \\
+z_{i}^{K} &= {A^m}_i B^{K}_{mn} {A^n}_i, \\
+B^{K}_{mn} &= \bra{m_0} \E^{\imi \mathbf{G}_K \cdot \mathbf{\op{r}}} \ket{n_0}
 \end{split}
 \end{equation}
 %
+%RZZK - K is an upper index that is not contravariant, there is also covariant K
 %RZZK - minus sign ensures minimization vs maximazation
 %RZZK - use other functions?
 %RZZK - Explain how Boys functions are obtained.
-where . This functional is used for both periodic and gas-phase systems~\cite{berghold2000general}. In the latter case, it is equivalent to the Boys functional.
-% berghold2000general --- PHYSICAL REVIEW B VOLUME 61, NUMBER 15
+where $\omega_K$ , $\mathbf{G}_K$, $\mathbf{\op{r}}$ - RZK. Summation over $K$ is written out explicitly because $K$ is not an orbital index. This functional can be used for both periodic (ZZZ at $\Gamma$-point only?) and gas-phase systems~\cite{berghold2000general}. In the latter case, it is equivalent to the Boys localization functional~\cite{RZK}.
+% berghold2000general --- PHYSICAL REVIEW B, 61,
 
-There exists multiple algorithms to carry out the optimization. In this work, we utilize a simple conjugate gradient algorithm summarized in Figure~\ref{fig:cg}. 
-
-The algorithm requires the gradient of $\Omega$ with respect to variational parameters $\mathbf{a}$.
+There exists a multitude of algorithms to carry out the unconstrained minimization of functional $\Omega$ with fixed $c_P$. In this work, we used a simple conjugate gradient algorithm summarized in Figure~\ref{fig:cg}. The gradient ${G_i}^j \equiv \frac{\partial \Omega}{\partial {a^i}_j}$  required in the algorithm is a sum of the localization ${L_i}^j \equiv \frac{\partial \Omega_L}{\partial {a^i}_j}$ and penalty ${P_i}^j \equiv \frac{\partial \Omega_P}{\partial {a^i}_j}$ components
 %
 \begin{equation} \label{eq:grad}
 \begin{split}
-{G_i}^j \equiv \frac{\partial \Omega}{\partial {a^i}_j} &= fff \frac{\partial \Omega}{\partial {A^k}_l}
+G{_k}^{l} = L{_k}^{l} + c_P P{_k}^{l}.
+\end{split}
+\end{equation}
+%
+These components can be readily expressed in terms of the derivatives with respect to the transformation coefficients $\tilde{X}{_k}^l \equiv \frac{\partial \Omega_X}{\partial {A^k}_l}$, where $X$ is either $L$ or $P$:
+%
+\begin{equation} \label{eq:grad-convert}
+\begin{split}
+{X_i}^j & = \tilde{X}{_k}^l \frac{\partial {A^k}_l}{\partial {a^i}_j} = \tilde{X}{_i}^j \sigma_{jj}^{-\frac{1}{2}} - \sigma_{in}^0 {A^n}_j  \sigma_{jj}^{-\frac{1}{2}} {A^m}_j \tilde{X}{_m}^j
+\end{split}
+\end{equation}
+%
+\begin{equation} \label{eq:grad-loc}
+\begin{split}
+\tilde{L}{_k}^l & = - \sum_K \frac{4 \omega_K}{\vert z_{l}^{K} \vert^2} \times \\ 
+&\times \left[  \operatorname{Re}(B^{K}_{kn}) {A^{n}}_{l} \operatorname{Re}(z_{l}^{K}) + \operatorname{Im}(B^{K}_{kn}) {A^{n}}_{l} \operatorname{Im}(z_{l}^{K}) \right]
+\end{split}
+\end{equation}
+%
+\begin{equation} \label{eq:grad-pen}
+\begin{split}
+\tilde{P}{_k}^l & = -2 \sigma_{km}^0 {A^m}_n \sigma^{nl} 
 \end{split}
 \end{equation}
 %
 
+\textbf{Adjusting penalty strength.} In the case of extremely large $c_P$, $\Omega_L$ is negligible compared to the penalty term and the minimization of $\Omega$ is equivalent to a trivial orbital orthogonalization. In the opposite case of extremely small $c_P$, the minimization of $\Omega$ leads to a linear dependence between NLMOs and the failure of the algorithm in Figure~\ref{fig:cg}. % to invert the NLMO overlap in Eq.~(\ref{eq:grad-pen}). 
+The strategy of finding the optimal penalty strength adopted in this work is to use moderately large initial $c_P$ value and perform the minimization of $\Omega$ gradually decreasing $c_P$ until the value of the determinant of the NLMO overlap drops below a desired threshold value $\epsilon_{\text{Det}} \in (0,1)$. The initial value of $c_P$ is chosen so that the 
 %
-\begin{equation} \label{eq:grad}
+\begin{equation}
 \begin{split}
-\frac{\partial \Omega_L}{\partial {A^k}_l} &= 
+c_{P} \gets - \Omega^0_{L}(\Omega^0_P + \log \epsilon_{\text{Det}})^{-1}  
 \end{split}
 \end{equation}
 %
+The logic behind this equation: but the functional before optimization must be larger than after 
+%
+\begin{equation}
+\begin{split}
+\Omega^0_{L} + c_P \Omega^0_P > \Omega^{\text{expected}}_L - c_P \log \epsilon_{\text{Det}} 
+\end{split}
+\end{equation}
+%
+which results in
+%
+\begin{equation}
+\begin{split}
+c_P > (\Omega^{\text{expected}}_L - \Omega^0_{L}) (\Omega^0_P + \log \epsilon_{\text{Det}})^{-1}
+\end{split}
+\end{equation}
+%
+At the same time, the initial $c_P$ value must be as small as possible.
 
+{\color{red} It might seem like a good idea to choose initial $c_P$ value that minimizes the Frobenius norm of the total gradient. The motivation is that the gradient of the localization component can be balanced as much as possible by the penalty gradient. In this case, the initial $c_P$ is given by the equation below (somewhat problematic index summation). The main reason not to use this initial value is that for $P_k^l$ is zero for all orthonormal states, giving infinitely large coefficient.
 %
-\begin{equation} \label{eq:grad}
+\begin{equation}
 \begin{split}
-\frac{\partial \Omega_V}{\partial {A^k}_l} &= 
+c_P = - \frac{ \sum_{nm} {L_m}^n {P_m}^n}{ \sum_{kl} {P_k}^l {P_k}^l}  
 \end{split}
 \end{equation}
 %
+}
 
-How to choose the coefficient? $Grad = A + c B$. Choose c that minimizes the squared norm of the Grad to get
-%
-\begin{equation} \label{eq:grad}
-\begin{split}
-c = - \frac{Trace (A^{\dagger} B)}{Trace(B^{\dagger} B)}  
-\end{split}
-\end{equation}
-%
 
 \begin{figure}
 \begin{algorithm}[H]
   \caption{Conjugate gradient minimization of $\Omega$}
   \label{alg:cg}
    \begin{algorithmic}[1]
-   	%\Procedure{ALMO.Stage2}{$\mathbf{r}, \tau, \mathbf{T}_0$}
+   	%\Procedure{Minimize$\Omega$}{$c_P, \tau, \mathbf{T}_0$}
 	\State Input $\epsilon_{\text{CG}}$ \Comment{Localization convergence threshold}
 	%\State Input $N_{\text{CG}}$, $N_{\text{Outer}}$ \Comment{Max CG, outer iterations}
 	\State Input $\epsilon_\text{Det}$ \Comment{Minimum allowed NLMO determinant}
-	%\State $\mathbf{\sigma,R} \gets \text{Eq.\ref{eq:dm}}(\mathbf{T}_{0})$
-	%\State $\mathbf{K}^{R_c} \gets ([\mathbf{S}]^{R_c})^{-1}$ \Comment{Inverted blocked AO overlap}
    	\State Input $\mathbf{T}_0$ \Comment{Coefficients of the initial states $\ket{i_0}$}
    	\State Input $\mathbf{S}$ \Comment{Basis set overlap}
    	\State Input $\mathbf{L}^K$ \Comment{Basis set representation of the localization operator} 
@@ -214,8 +253,8 @@ c = - \frac{Trace (A^{\dagger} B)}{Trace(B^{\dagger} B)}
 	\State $i_{\text{Outer}} \gets 0$ \Comment{Iteration counter}
 	\Repeat \Comment{Loop to change the penalty strength}
 		\State $i_{\text{Outer}} \gets i_{\text{Outer}} + 1$ 
-		\If{$i_{\text{Outer}}>1$} \Comment{$c_V$ is initialized below}
-			\State $c_{V} \gets c_V / 2$ 
+		\If{$i_{\text{Outer}}>1$} \Comment{$c_P$ is initialized below}
+			\State $c_{P} \gets c_P / 2$ 
 		\EndIf
 		\State StopCG $\gets$ False \Comment{Flag to exit the CG loop}
 		\State $i_{\text{CG}} \gets 0$ \Comment{Iteration counter}
@@ -225,19 +264,19 @@ c = - \frac{Trace (A^{\dagger} B)}{Trace(B^{\dagger} B)}
 			\State $\mathbf{A} \gets \mathbf{a} \left[ \text{diagonal}(\mathbf{a}^{\dagger} \mathbf{\sigma}_0 \mathbf{a}) \right]^{-\frac{1}{2}}$ \Comment{Update NLMOs}
 			\State $\mathbf{\sigma} \gets \mathbf{A}^{\dagger}\mathbf{\sigma}_0 \mathbf{A}$ \Comment{Update overlap}
 			\State $\text{Det} \gets \text{determinant} (\mathbf{\sigma})$ \Comment{Determinant}
-			\State $\Omega_{V} \gets - \log [\text{Det}] $ \Comment{Orthogonalization functional}
-			\State $\mathbf{G}_{V} \gets \text{Eq.\ref{eq:grad-pen}}(\mathbf{A})$ \Comment{Orthogonalization gradient}
-			\State $\Omega_{L} \gets \text{Eq.\ref{eq:fun-loc}}(\mathbf{A})$ \Comment{Localization functional}
-			\State $\mathbf{G}_{L} \gets \text{Eq.\ref{eq:grad-loc}}(\mathbf{A})$ \Comment{Localization gradient}
-			\If{$i_{\text{Outer}}=1$} %RZZK: how to compute the coefficient correctly using L2 norm
-				%\State $c_{V} \gets \vert\vert \mathbf{G}_{L} \vert \vert_{2} / \vert\vert \mathbf{G}_{V} \vert \vert_{2} $ 
-				\State $c_{V} \gets \text{Tr}(\mathbf{G}_L^{\dagger} \mathbf{G}_V)/\text{Tr}(\mathbf{G}_V^{\dagger}\mathbf{G}_V)$
+			\State $\Omega_{P} \gets - \log [\text{Det}] $ \Comment{Orthogonalization functional}
+			\State $\mathbf{P} \gets \text{Eq~(\ref{eq:grad-pen}) and~(\ref{eq:grad-convert})}$ \Comment{Orthogonalization gradient}
+			\State $\Omega_{L} \gets \text{Eq~(\ref{eq:fun-loc})}$ \Comment{Localization functional}
+			\State $\mathbf{L} \gets \text{Eq~(\ref{eq:grad-loc}) and~(\ref{eq:grad-convert})}$ \Comment{Localization gradient}
+			\If{$i_{\text{Outer}}=1$ \textbf{and} $i_{\text{CG}}=1$} 
+				%\State $c_{P} \gets \text{Tr}(\mathbf{L}^{\dagger} \mathbf{P})/\text{Tr}(\mathbf{P}^{\dagger}\mathbf{P})$
+				\State $c_{P} \gets - \Omega_{L}(\Omega_P + \log \epsilon_{\text{Det}})^{-1}$ \Comment{Initial strength}
 			\EndIf
-			\State $\Omega \gets \Omega_{L} + c_V \Omega_{V} $ 
+			\State $\Omega \gets \Omega_{L} + c_P \Omega_{P} $ 
 			\If{$i_{\text{CG}}>1$}
 				\State $\mathbf{\Gamma} \gets \mathbf{G}$ \Comment{Save old gradient}
 			\EndIf 
-			\State $\mathbf{G} \gets \mathbf{G}_{L} + c_V \mathbf{G}_{V} $ 
+			\State $\mathbf{G} \gets \mathbf{L} + c_P \mathbf{P} $ 
 			%\State $\text{Error}_\text{CG} \gets \vert\vert \mathbf{G} \vert \vert_{\text{max}}$
 			\If{$\vert\vert \mathbf{G} \vert \vert_{\text{max}} < \epsilon_{\text{CG}}$}
 				\State StopCG $\gets$ True
@@ -260,7 +299,7 @@ c = - \frac{Trace (A^{\dagger} B)}{Trace(B^{\dagger} B)}
 					\State $\beta \gets \text{Tr}(\mathbf{G}^{\dagger} \mathbf{D})/\text{Tr}(\mathbf{\Gamma}^{\dagger}\mathbf{O})$
 					\State $\mathbf{D} \gets \mathbf{D} + \beta \mathbf{O}$ \Comment{Search direction}
 				\EndIf 
-				\State $\alpha \gets \text{LineSearch}(\mathbf{D})$ \Comment{Step size}
+				\State $\alpha \gets \text{argmin}_{\alpha} \Omega(\mathbf{a} + \alpha \mathbf{D})$ \Comment{Line search}
 				\State $\mathbf{a}\gets \mathbf{a} + \alpha \mathbf{D}$ \Comment{Update variational DOFs}
 			\EndIf
 		\Until{StopCG} 
@@ -342,7 +381,7 @@ We present several representative examples and show the shape of NLMOs and OLMOs
 
 After comparing the 
 
-Present localization paths for two systems: simple and challenging. Use $c_V$ values determined by our automatic procedure. Remember that the whole point of creating this method was to make the localization black-box.
+Present localization paths for two systems: simple and challenging. Use $c_P$ values determined by our automatic procedure. Remember that the whole point of creating this method was to make the localization black-box.
 
 Can we localize virtual orbitals?
 
@@ -352,7 +391,7 @@ Show localization orbitals for a big molecule, molecule with non-intuitive elect
 
 Discuss existing issues: convergence rate, sigma-pi mixing, orthogonalization tails, sparsity of the final coefficients. Mention possible future work to resolve them.
 
-TODO: Visualize an xyz file with localization centers to make sure NLMOs are physical. Compute the $c_V$ coefficient correctly the equation to minimize the L2 norm of the gradient.
+TODO: Visualize an xyz file with localization centers to make sure NLMOs are physical. Compute the $c_P$ coefficient correctly the equation to minimize the L2 norm of the gradient.
 
 check the coordinated of the localized orbital centres???
 
