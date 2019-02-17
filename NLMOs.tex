@@ -60,13 +60,21 @@ Direct unconstrained localization of nonorthogonal one-electron orbitals
 \date{\today}
 
 \begin{abstract}
-Spatially localized one-electron orbitals are of tremendous importance in electronic structure theory of materials and molecular systems. 
-They are used to interpret chemical bonding and speed up computations. 
+Spatially localized molecular orbitals are of tremendous importance in the electronic structure theory as they are widely used to describe chemical bonding and speed up calculations.
+Nonorthogonal localized molecular orbitals (NLMOs) are known to be noticeably more localized than their conventional orthogonal counterparts. 
+Unfortunately, the existing methods to obtain NLMOs must pre-determine and freeze the localization center of each NLMO before its spread is minimized. 
+This is done to avoid the “collapse” of the occupied subspace – a problem of NLMOs becoming linearly dependent. 
+In this paper, we describe an unconstrained black-box method to localize nonorthogonal orbitals that determines the position of their centers automatically during the optimization process. 
+The key to the new procedure is to construct and impose a penalty function which prevents the orbital “collapse”. 
+An algorithm is proposed to adjust the strength of the penalty and produce the right balance between orthogonality and locality of NLMOs. 
+The resulting method produces NLMO fast, without requiring good understanding of bonding patterns in the system (i.e. “chemical intuition”) and is demonstrated to work well a variety of molecules and materials (gamma-point only) including large systems with non-trivial bonding patterns. 
 \end{abstract}
 
 \maketitle
 
 \section{Introduction} 
+
+%1. Why LMOs and maximally localized Wannier functions (MLWFs) are important?
 
 One-electron orbitals, which are defined as molecular orbitals (MOs) in the molecular systems and Bloch orbitals in the solid state field, play a paramount important role in electronic structure theory. 
 Delocalized canonical molecular orbitals (CMOs) are widely implemented in current electronic structure calculations due to they have well defined energies and associated orbital energies. 
@@ -324,16 +332,19 @@ c_P = - \frac{ \sum_{nm} {L_m}^n {P_m}^n}{ \sum_{kl} {P_k}^l {P_k}^l}
 \hline\hline
 Molecules & CMO &  OLMO$(\%)$ & NLMO$(\%)$ & Final Determinant \\
 \hline
-H$_2$O& 363 & 288 (20.5) & 230 (20.3) & 0.263 \\ 
-C$_3$H$_6$ & 2259 & 883 (60.9) & 747 (15.4) & 1.131E-06 \\ 
-B$_2$H$_6$ & 1727 & 676 (60.9) & 630 (6.7) & 0.718 \\ 
-C$_6$H$_6$  & 5676 & 1727 (69.6) & 1157 (33.0) & 5.721E-06 \\ 
+H$_2$O & 363 & 288 (20.5) & 230 (20.3) & 0.263 \\ 
+CO$_2$ & 1856 & 654 (64.8) & 474 (27.5) & 0.102 \\
+C$_3$H$_6$ & 2259 & 883 (60.9) & 761 (13.8) & 0.108 \\
+C$_4$H$_6$ & 2951 & 1110 (62.4) & 903 (18.6) & 0.106 \\
+B$_2$H$_6$ & 1727 & 676 (60.9) & 630 (6.7) & 0.718 \\
+B$_3$N$_3$H$_6$ & 5471 & 1517 (72.3)  & 1242 (18.1) & 0.109  \\
+C$_6$H$_6$  & 5676 & 1727 (69.6) & 1291 (25.2) & 0.107 \\ 
 C$_7$H$_{16}$ & 20016 & 2220 (88.9) & 1953 (12.0) & 0.122 \\ 
-C$_2$B$_{10}$H$_{12}$ & 11830 & 3432 (71.0) & 2813 (18.1) & 0.004 \\ 
-C$_{20}$H$_{42}$ & 245277 & 6160 (97.5) & 5405 (12.2) & 0.003 \\ 
-C$_{72}$H$_{24}$ & 351937 & 22791 (93.5) & 15773 (30.8) & 1.925E-07 \\ 
-Graphene & 34998 & 8025 (77.1) & 5281 (34.2) & 2.176E-07\\
-Average & & 71.1 & 20.3 & \\
+C$_2$B$_{10}$H$_{12}$ & 11830 & 3432 (71.0) & 2873 (16.3) & 0.108 \\ 
+C$_{20}$H$_{42}$ & 245277 & 6160 (97.5) & 5514 (10.5) & 0.108 \\ 
+C$_{72}$H$_{24}$ & 351937 & 22791 (93.5) & 19201 (15.8) & 0.106 \\ 
+graphene & 34998 & 8025 (77.1) & 6675 (16.9) & 0.0936 \\
+Average & & 69.9 & 16.8 & \\
 \hline
 \end{tabular}
 \label{table:nonlin}
@@ -341,45 +352,39 @@ Average & & 71.1 & 20.3 & \\
 
 \begin{figure}[htbp]
 \includegraphics[scale=0.65]{figure_1.pdf} 
-  \caption{The localization function vs Volume penalty coefficient of water molecule}
+  \caption{The relationship between relative penalty strength with  localization functional ans determinant of C$_6$H$_6$ and C$_{72}$H$_{24}$ molecules}
 \end{figure}
 
-To test our newly generated method, we performed the simulation on several systems from simple water molecule to large polymers (H$_2$O, C$_3$H$_6$, B$_2$H$_6$, C$_6$H$_6$, C$_7$H$_{16}$, C$_2$B$_{10}$H$_{12}$, C$_{20}$H$_{42}$ and C$_{72}$H$_{24}$).
-
-We employed the DFT method to determine the NLMOs and calculate the related quantities (localization functional, determinant of CMOs, OLMOs and NLMOs).
-
-The optimization is stable and relative efficient in all out tests.
-
+To test our newly generated method, we performed the simulation on several systems from simple water molecule to large polymers and graphene systems (H$_2$O, CO$_2$, C$_3$H$_6$, C$_4$H$_6$, B$_2$H$_6$, B$_3$N$_3$H$_6$, C$_6$H$_6$, C$_7$H$_{16}$, C$_2$B$_{10}$H$_{12}$, C$_{20}$H$_{42}$, C$_{72}$H$_{24}$, graphene).
+We employed the DFT method to generate the NLMOs and calculate the related quantities (localization functional and determinants of CMOs, OLMOs and NLMOs).
+The optimization procedure is stable and relative efficient in all out tests.
 The results are showed in the Table 1. 
-
 To illustrate the extent of the localization,  the Boys localization functional is calculated to compare between CMOs, OLOMOs and NLMOs.
-
-The determinant is reported to describe the orthogonality, which is related to the linear dependence issue.
-
 The results of localization functional of the CMOs, OLMOs and NLMOs are tabulated in columns of 2-4 of table 1, respectively.
-
-The relative decreases of the localization functions of the NLMOs to OLMOs are also reported in the table, which are from $6.7\%$ to $34.2\%$ and $20.3\%$ on average.
-
+The relative decreases of the localization functions of the NLMOs to OLMOs are also reported in the table, which are from $6.7\%$ to $27.5\%$ and $16.8\%$ on average.
+The determinant is reported to describe the orthogonality, which is related to the linear dependence issue.
 The final determinant value has showed that all obtained NLMOs are linear independent and do not collapse onto each other.
-
-By visualizing the generated NLMOs and OLMOS, we compare the spatial difference between them with the classical chemical bonding principles.
-
-We present several representative examples and show the shape of NLMOs and OLMOs.
-
-
+The relationships between the relative penalty strength with determinant and localization functional have been reported in the figure 2. Even though the final determinant could go down to extremely small value (such as $10^{-7}$ ) in some systems, we set 0.1 as final determinant cutoff since we suspect some generated NLMOs may become linear dependent.
+ 
 \begin{figure*}[hbpt]
 \centering
 \includegraphics[width=\textwidth]{figure_2.pdf}
 \caption{The localization function vs Volume penalty coefficient of tested molecules}
 \end{figure*}
 
-% This file is not in the repository
-%\begin{figure}[htbp]
-%\includegraphics[scale=0.2]{nlmo_C2B10H12_1.pdf} 
-%  \caption{The localization function vs Volume penalty coefficient of tested molecules}
-%\end{figure}
+\begin{figure}[htbp]
+\includegraphics[scale=0.5]{figure_3.pdf} 
+  \caption{The relationship between relative penalty strength with  localization functional ans determinant of C$_6$H$_6$ and C$_{72}$H$_{24}$ molecules}
+\end{figure}
 
-After comparing the 
+By visualizing the generated NLMOs and OLMOS, we compare the spatial difference between them with the classical chemical bonding principles.
+We present several representative examples and show the shape of NLMOs and OLMOs.
+After comparing the OLMOs and NLMOs, we found the spacial distribution of OLMOs and NLMOs are similar, which both exhibit traditional chemical bonding properties.
+The shape of the correpsonding OLMO and NLMO are extremely similar  but with more compact distribution because of smaller "orthogonalization tails" for most of the tested systems except for graphene. 
+In the graphene system, the generated NLMOs are more localized and reasonable representative of the $\pi$ bond than the OLMOs due to its more localized property.
+
+Here we chose one NOLMO to illustrate this property, for example, the 100th NOLMO of “MOL” plotted in Figure 6 with a 0.1 isosurface value and with a 0.0001 isosurface value. This NOLMO is localized in an extremely small portion of real space. A similar characteristic is also observed for other NOLMOs of the studied systems. This advantage can be used to reduce the computational effort of electronic structure calculations based on real-space grids.
+
 
 Present localization paths for two systems: simple and challenging. Use $c_P$ values determined by our automatic procedure. Remember that the whole point of creating this method was to make the localization black-box.
 
