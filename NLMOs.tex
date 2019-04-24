@@ -1,4 +1,4 @@
-\documentclass[aps,prl,reprint,amsmath,amssymb]{revtex4-1}
+ \documentclass[aps,prl,reprint,amsmath,amssymb]{revtex4-1}
 
 \usepackage{epsfig,color,graphicx}
 %\usepackage{algorithmic}
@@ -60,55 +60,87 @@ Direct unconstrained localization of nonorthogonal one-electron orbitals
 \date{\today}
 
 \begin{abstract}
-Spatially localized molecular orbitals are of tremendous importance in the electronic structure theory as they are widely used to describe chemical bonding and speed up calculations.
+Spatially localized molecular orbitals are of tremendous importance in electronic structure theory as they are widely used to describe chemical bonding and speed up calculations.
 Nonorthogonal localized molecular orbitals (NLMOs) are known to be noticeably more localized than their conventional orthogonal counterparts. 
 Unfortunately, the existing methods to obtain NLMOs must pre-determine and freeze the localization center of each NLMO before its spread is minimized. 
-This is done to avoid the “collapse” of the occupied subspace – a problem of NLMOs becoming linearly dependent. 
+This is done to avoid the ``collapse'' of the occupied subspace – a problem of NLMOs becoming linearly dependent. 
 In this paper, we describe an unconstrained black-box method to localize nonorthogonal orbitals that determines the position of their centers automatically during the optimization process. 
-The key to the new procedure is to construct and impose a penalty function which prevents the orbital “collapse”. 
+The key to the new procedure is to construct and impose a penalty function which prevents the orbital ``collapse''. 
 An algorithm is proposed to adjust the strength of the penalty and produce the right balance between orthogonality and locality of NLMOs. 
-The resulting method produces NLMO fast, without requiring good understanding of bonding patterns in the system (i.e. “chemical intuition”) and is demonstrated to work well a variety of molecules and materials (gamma-point only) including large systems with non-trivial bonding patterns. 
+The resulting method produces NLMO fast, without requiring any \emph{a priori} knowledge of bonding patterns in the system (i.e. ``chemical intuition'') and is demonstrated to work well a variety of molecules and materials (RZZK: gamma-point only) including large systems with non-trivial bonding. 
 \end{abstract}
 
 \maketitle
 
 \section{Introduction} 
 
-%1. Why LMOs and maximally localized Wannier functions (MLWFs) are important?
+% RZZK: Potential reviewers: Weitao?, Marzari, guys who developed LMO for CP2K.
+%RZZK: boraphene?
 
-One-electron orbitals, which are defined as molecular orbitals (MOs) in the molecular systems and Bloch orbitals in the solid state field, play a paramount important role in electronic structure theory. 
-Delocalized canonical molecular orbitals (CMOs) are widely implemented in current electronic structure calculations due to they have well defined energies and associated orbital energies. 
+In one-electron theories such as Hartree-Fock method and Kohn-Sham density functional theory (DFT), spatially localized orbitals are constructed by finding a linear transformation of the occupied eigenstates of the effective Hamiltonian that minimizes the spread of individual orbitals. 
+These orbitals are known as localized molecular orbitals (LMOs) in the field of molecular quantum chemistry and maximally localized Wannier functions (MLWFs) in solid state physics. 
+Here, they will be collectively referred to as LMOs whereas the eigenstates of the effective Hamiltonian will be called canonical molecular orbitals (CMOs) regardless of whether the system is isolated or under periodic boundary conditions.
+While LMOs and CMOs provide two equivalent representations of the electron distribution and all other observable properties of a system, LMOs are of paramount importance in one-electron theories and far beyond.  
+LMOs are widely used to describe and visualize chemical bonding between atoms in terms of localized distributions of electrons thus helping classify bonds and understand the electronic-structure origin of observed properties. 
+Moreover, LMOs are the key ingredient in many local electronic structure methods~\cite{goedecker1999efficient, bowler2012methods, zalesny2011linear, RZK-localMP2, RZK-localCC} that dramatically reduce the computational cost of modeling electronic properties of large atomistic systems.
+% RZK: add citations (reviews are preferred) to local electron correlation methds like MP2 and coupled-cluster.
 
-Localized MOs (LMOs) and their condensed-phase equivalent maximal localized Wannier functions (MLWFs) provide an equivalent description of the electron distribution in one-electron theories (Hartraa-Fock, Density Functional Theory) and are widely used to describe the chemical bonding patterns since the classical chemical bonding theory describes the bonding properties as the localized distributed electrons.
-The conventional electronic structure methods experience high-cost and slow running time problems when applied to large systems, because of the need of the cubic scaling operation to diagonalize the Hamiltonian matrix.
-To overcome the limitation, researchers have focused on developing the LS methods.
-LMOs have been proposed to be an extremely promising candidate to achieve LS calculations in many local electron correlation electronic structure methods.~\cite{wang1992simple, ordejon1993unconstrained, mauri1993orbital, mauri1994electronic, stechel1994n_scaling, goedecker1994efficient}
 
-Early developments of the LMOs were constrained to be orthogonal (OLMOs)~\cite{weinstein1971localized} which can be obtained through unitary transformations from CMOs based on extremizing the localization functions, such as Boys-Foster~\cite{boys1960construction}, Edmiston-Ruedenberg~\cite{bytautas2002electron, bytautas2003split, edmiston1963localized}, Pipek-Mezey~\cite{pipek1989a_fast}, and Von Niessen methods~\cite{niessen1972density}.
-Due to the orthogonality condition of the OLMOs, the "orthogonalization tails" outside the localization center can be observed in the generated OLMOs.
-These "orthogonalization tails" reduce the localization and complicated the electronic structural information transformation from one system to another.
+%\bibitem{bowler2012methods}
+%\bibinfo{author}{Bowler, D.} \& \bibinfo{author}{Miyazaki, T.}
+%\newblock \bibinfo{title}{Methods in electronic structure calculations}.
+%\newblock \emph{\bibinfo{journal}{Rep. Prog. Phys.}}
+%  \textbf{\bibinfo{volume}{75}}, \bibinfo{pages}{036503}
+%  (\bibinfo{year}{2012}).
+%
+%\bibitem{zalesny2011linear}
+%\bibinfo{author}{Zale{\'s}ny, R.}, \bibinfo{author}{Papadopoulos, M.~G.},
+%  \bibinfo{author}{Mezey, P.~G.} \& \bibinfo{author}{Leszczynski, J.}
+%\newblock \emph{\bibinfo{title}{Linear-Scaling Techniques in Computational
+%  Chemistry and Physics: Methods and Applications}}, vol.~\bibinfo{volume}{13}
+%  (\bibinfo{publisher}{Springer Science \& Business Media},
+%  \bibinfo{year}{2011}).
 
-Since nonorthogonal LMOs (NLMOs)~\cite{anderson1968self, diner1968fully, magnasco1974localized, payne1977hartree, mehler1977self} are obtained by nonsingular transformation from CMOs without the orthogonality condition, more degrees of freedom are available during the generation of NLMOs, resulting in a more localized distribution of electrons in space.
-The concept of NLMOs was firs introduced by Anderson~\cite{anderson1968self} and Diner et al~\cite{diner1968fully} in 1968, but more efforts were devoted to constructing OLMOs previously.
-Several efforts have been made to develop the method to construct NLMOs recently~\cite{feng2004An_efficient, liu2000nonorthogonal, peng2013effective, hoyvik2017generalising}, and researchers have proposed that NLMOs are about $10-30 \%$ more compact than OLMOs~\cite{feng2004An_efficient, liu2000nonorthogonal}.
+In traditional localization methods, LMOs are obtained by finding a unitary transformation of CMOs that extremizes a localization functional. [RZK: repetition]
+Since CMOs are orthogonal and a unitary transformation preserves the overlap between the orbitals, LMOs constructed in this way are orthogonal (OLMOs)~\cite{weinstein1971localized}.
+Multiple localization functionals have been proposed for molecular systems including Boys-Foster~\cite{boys1960construction}, Edmiston-Ruedenberg~\cite{bytautas2002electron, bytautas2003split, edmiston1963localized}, Pipek-Mezey~\cite{pipek1989a_fast}, and Von Niessen~\cite{niessen1972density}. In condensed phase physics and materials science, RZK. 
+%RZK:  Cite localization methods (reviews are preferred) from condensed phase physics (there should be one by Marzari). 
+%
+Due to the imposed orthogonality condition, OLMOs still exhibit small non-zero values even far away from the localization center. 
+These ``orthogonalization tails'' complicate transferability of chemically relevant electronic-structure information from one system to another and, more importantly, reduce orbital locality making orbital-based local correlation methods less computationally efficient.
+To mitigate the undesirable effect of ``orthogonalization tails'', it has been proposed to lift the orthogonality constraint in the localization procedure the goal of increasing the flexibility and locality of LMOs. 
+%RZK: presentation problem: do we want to talk about NLMOs, that are strictly localized a priori? 
+It has been found that nonorthogonal LMOs (NLMOs) are indeed about $10-30 \%$ more localized than OLMOs~\cite{feng2004An_efficient, liu2000nonorthogonal}. 
+Nonorthogonal LMOs (NLMOs)~\cite{anderson1968self, diner1968fully, magnasco1974localized, payne1977hartree, mehler1977self} are obtained by nonsingular transformation from CMOs without the orthogonality condition, 
+% RZK the following sentence is unclear: The concept of NLMOs was first introduced by Anderson~\cite{anderson1968self} and Diner et al~\cite{diner1968fully} in 1968, but more efforts were devoted to constructing OLMOs previously.
+Substantial recent effort has been made to develop reliable algorithms to construct NLMOs~\cite{feng2004An_efficient, liu2000nonorthogonal, peng2013effective, hoyvik2017generalising}. % RZK: add citations for the a-priori methods?
 
 One way to construct NLMOs is to employ the variational optimization by restricting the variational space to a local space.
 The NLMO is then expanded in the variational space, which helps to eliminate the long-range tails.
 However, this approach may introduce error due to the basis set truncation and lead to result in the very approximation NLMOs because the choice of the local space may be different from the true localization region.
 
 Other studies proposed another method to obtain NLMOs by linear transformations of CMOs with relaxation of the orthogonality constraint.~\cite{feng2004An_efficient, cui2010efficient} 
-The limitation of this method is that the final MOs either are still fairly orthogonal and similar localization compared with OLMOs or lead to the linear dependence between the orbitals.~\cite{feng2004An_efficient} (we will refer to the linear dependence problem as the collapse problem.)
+The limitation of this method is that the final MOs either are still fairly orthogonal and similar localization compared with OLMOs (RZK: citation needed) or lead to the linear dependence between the orbitals.~\cite{feng2004An_efficient} (we will refer to the linear dependence problem as the collapse problem.)
 To overcome the collapse problem, Yang and co-workers~\cite{feng2004An_efficient, cui2010efficient}  developed a method to construct NLMOs by fixing the centers of NLMOs during the minimization of the spread functional. 
 The positions of the centers are predefined from the corresponding OLMOs~\cite{feng2004An_efficient} or good understanding of bonding patterns in the systems (i.e.``chemical intuition'')~\cite{cui2010efficient}.
 While this method solved the linear dependence problem, it still needs more computational efforts to construct OLMOs centroids and to know the bonding properties in advance by using "chemical intuition", which may limit the application of the method.
 
-In this paper, we propose a fully black box method to construct the NLMOs without the need of predefined centroids.
-With the new approach, NLMOs can be obtained by automatic minimization the unconstrained spread functional with the  penalty functional which prevents the orbital collapse.
-We successfully developed this new black-box approach to obtain NLMOs and achieved more compact and nonorthogonal MOs compared with OLMOs.
+%RZZK: Strictly speaking the localization of nonorthogonal orbitals is an ill-defined problem because a global search for the minimum of the localization functional will yield an electronic state 
+
+In this paper, we propose a black-box method to construct NLMOs that determines the optimal positions of their centers automatically, without \emph{a priori} knowledge of bonding patterns in the system. 
+The key new component in the proposed method is a penalty function which prevents the orbital ``collapse''. 
+By adjusting the penalty strength, it is possible to find the required balance between the linear independence orthogonality and locality of the orbitals.
+
+RZZK: The inclusion of the penalty term converts the localization procedure into an unconstrained and straightforward optimization problem. Additionally, adjusting the strength of the penalty $c_P$ enables one to achieve the right balance between the nonorthogonality and locality of the orbitals. 
+An algorithm is proposed to adjust the strength of the penalty and produce the right balance between orthogonality and locality of NLMOs. 
+The demonstrate that the proposed method produces NLMO fast,  (i.e. ``chemical intuition'') and is demonstrated to work well a variety of molecules and materials (RZZK: gamma-point only) including large systems with non-trivial bonding. 
 
 \section{Theory and algorithms}
 
-The localization procedure starts with a set of occupied (or ZZZ virtual?) one-electron states $\ket{i_0}$. 
+% RZK, the main question is: how closely do we follow our own recipe?
+
+The localization procedure starts with a set of occupied  one-electron states $\ket{i_0}$. 
+%RZZK: should we do virtual states as well? No, let's leave it for the next paper.
 These orbitals are not assumed to be canonical or even orthogonal. 
 However, they are assumed to be normalized. 
 Furthermore, they must be linear independent, that is, their overlap matrix $\sigma_{ji}^0 \equiv \braket{j_0}{i_0}$ must be invertible. 
@@ -151,9 +183,7 @@ A normalization constraint can be imposed on NLMOs if their coefficients are exp
 \end{split}
 \end{equation}
 %
-The inclusion of the penalty term converts the localization procedure into an unconstrained and straightforward optimization problem. Additionally, adjusting the strength of the penalty $c_P$ enables one to achieve the right balance between the nonorthogonality and locality of the orbitals. 
-%RZK: We will demonstrate below that this flexibility is useful because a high degree of linear dependence  
-A procedure that finds the penalty strength for the desired compromise between the nonorthogonality and locality is discussed below. 
+The inclusion of the penalty term converts the localization procedure into an unconstrained and straightforward optimization problem. Additionally, adjusting the strength of the penalty $c_P$ enables one to achieve the right balance between the nonorthogonality and locality of the orbitals (see below). 
 
 In this work, we adopted the following localization functional 
 %
@@ -169,7 +199,7 @@ B^{K}_{mn} &= \bra{m_0} \E^{\imi \mathbf{G}_K \cdot \mathbf{\op{r}}} \ket{n_0}
 %RZZK - minus sign ensures minimization vs maximazation
 %RZZK - use other functions?
 %RZZK - Explain how Boys functions are obtained.
-where $\omega_K$ , $\mathbf{G}_K$, $\mathbf{\op{r}}$ - RZK. Summation over $K$ is written out explicitly because $K$ is not an orbital index. This functional can be used for both periodic (ZZZ at $\Gamma$-point only?) and gas-phase systems~\cite{berghold2000general}. In the latter case, it is equivalent to the Boys localization functional~\cite{RZK}.
+where $\omega_K$ , $\mathbf{G}_K$, $\mathbf{\op{r}}$ - RZZK. Summation over $K$ is written out explicitly because $K$ is not an orbital index. This functional can be used for both periodic (ZZZ at $\Gamma$-point only?) and gas-phase systems~\cite{berghold2000general}. In the latter case, it is equivalent to the Boys localization functional~\cite{RZK}.
 % berghold2000general --- PHYSICAL REVIEW B, 61,
 
 There exists a multitude of algorithms to carry out the unconstrained minimization of functional $\Omega$ with fixed $c_P$. In this work, we used a simple conjugate gradient algorithm summarized in Figure~\ref{fig:cg}. The gradient ${G_i}^j \equiv \frac{\partial \Omega}{\partial {a^i}_j}$  required in the algorithm is a sum of the localization ${L_i}^j \equiv \frac{\partial \Omega_L}{\partial {a^i}_j}$ and penalty ${P_i}^j \equiv \frac{\partial \Omega_P}{\partial {a^i}_j}$ components
@@ -202,42 +232,52 @@ These components can be readily expressed in terms of the derivatives with respe
 \end{equation}
 %
 
-\textbf{Adjusting penalty strength.} In the case of extremely large $c_P$, $\Omega_L$ is negligible compared to the penalty term and the minimization of $\Omega$ is equivalent to a trivial orbital orthogonalization. In the opposite case of extremely small $c_P$, the minimization of $\Omega$ leads to a linear dependence between NLMOs and the failure of the algorithm in Figure~\ref{fig:cg}. % to invert the NLMO overlap in Eq.~(\ref{eq:grad-pen}). 
-The strategy of finding the optimal penalty strength adopted in this work is to use moderately large initial $c_P$ value and perform the minimization of $\Omega$ gradually decreasing $c_P$ until the value of the determinant of the NLMO overlap drops below a desired threshold value $\epsilon_{\text{Det}} \in (0,1)$. The initial value of $c_P$ is chosen so that the 
-%
-\begin{equation}
-\begin{split}
-c_{P} = - \Omega^0_{L}(\Omega^0_P + \log \epsilon_{\text{Det}})^{-1}  
-\end{split}
-\end{equation}
-%
-The logic behind this equation: but the functional before optimization must be larger than after 
-%
-\begin{equation}
-\begin{split}
-\Omega^0_{L} + c_P \Omega^0_P > \Omega^{\text{expected}}_L - c_P \log \epsilon_{\text{Det}} 
-\end{split}
-\end{equation}
-%
-which results in
-%
-\begin{equation}
-\begin{split}
-c_P > (\Omega^{\text{expected}}_L - \Omega^0_{L}) (\Omega^0_P + \log \epsilon_{\text{Det}})^{-1}
-\end{split}
-\end{equation}
-%
-At the same time, the initial $c_P$ value must be as small as possible.
+\textbf{Penalty strength.} If the penalty strength $c_P$ is extremely large, $\Omega_L$ is negligible compared to the penalty term and the minimization of $\Omega$ is numerically equivalent to a trivial orbital orthogonalization. In the opposite case of extremely small $c_P$, the minimization of $\Omega$ may result in a linear dependence between NLMOs as reported earlier~\cite{RZK}. % RZK: cite Weitao's paper, in which they fix centroids.
+In the latter case, the algorithm shown in Figure~\ref{fig:cg} fails to compute the inverse of the NLMO overlap required in Eq.~(\ref{eq:grad-pen}). 
 
-{\color{red} It might seem like a good idea to choose initial $c_P$ value that minimizes the Frobenius norm of the total gradient. The motivation is that the gradient of the localization component can be balanced as much as possible by the penalty gradient. In this case, the initial $c_P$ is given by the equation below (somewhat problematic index summation). The main reason not to use this initial value is that for $P_k^l$ is zero for all orthonormal states, giving infinitely large coefficient.
+As we show below, there is a wide range of $c_P$ values between the two extremes that produce NLMOs that are substantially more localized than OLMOs and linearly independent.  
+Within this range, $c_P$ serves as an adjustable parameter that can be used to achieve a desirable locality-orthogonality compromise. 
+For a fixed value of $c_P$, the degree of linear dependence between the optimal NLMOs can be measured by the value of the determinant of the NLMO overlap matrix. 
+Thus, the flexibility of the penalized localization method presented here can be favorably compared to the existing methods that produce either orthogonal orbitals, linearly-dependent LMOs, or NLMOs with fixed localization centers. 
+
+A simple strategy to find an appropriate penalty strength is to minimize $\Omega$ with a sufficiently large initial $c_P$ value and then gradually decrease $c_P$ until the determinant of the overlap of the \emph{optimal} NLMOs drops below a desired threshold $\text{D}_{\text{min}} \in (0,1]$. 
+The initial value of $c_P$ should be chosen to balance approximately the localization and penalty components of $\Omega$. 
+Thus, a reasonable initial value of $c_P$ can be estimated by assuming that the reduction in $\Omega_L$ upon the minimization of $\Omega$ has the same order of magnitude as the change in the penalty $c_P \Omega_P$:
 %
-\begin{equation}
-\begin{split}
-c_P = - \frac{ \sum_{nm} {L_m}^n {P_m}^n}{ \sum_{kl} {P_k}^l {P_k}^l}  
+\begin{equation} \label{eq:cp-beta}
+\begin{split} 
+%\Omega_L(\mathbf{I}) + c_P \Omega_P(\mathbf{I}) & \sim \Omega_{L}(\mathbf{A}^{\ast}) - c_P \log \text{D}_{\text{min}} \\
+c_P^{\text{init}} & \sim \frac{ \Omega_{L}(\mathbf{I}) - \Omega_{L}(\mathbf{A}^{\ast}) }{ \Omega_{P}(\mathbf{A}^{\ast}) - \Omega_{P}(\mathbf{I}) } = \frac{ \beta_L^{\ast} }{ \beta_P^{\ast} } \times \Omega_{L}(\mathbf{I})
 \end{split}
 \end{equation}
 %
-}
+where $\mathbf{A}^{\ast}$ denotes the (yet unknown) solution to the minimization problem, $\beta_L^{\ast} \equiv \frac{\Omega_L(\mathbf{I})- \Omega_L(\mathbf{A}^{\ast})}{\Omega_L(\mathbf{I})} \in [0,1]$ is the (positive) expected relative reduction in the localization functional, and $\beta_P^{\ast} \equiv \log \frac{\det \sigma(\mathbf{I})}{ \det \sigma(\mathbf{A}^{\ast}) } \approx \log \frac{\det \sigma(\mathbf{I})}{ \text{D}_{\text{min}} } \equiv \beta_P > 0$ is the logarithm of the ratio of the initial and final determinants. 
+
+The importance of Eq.~(\ref{eq:cp-beta}) is that it allows to express $c_P$ as a multiple of $\Omega_L(\mathbf{I})$, which is known in the beginning of the optimization procedure:
+%
+\begin{equation} \label{eq:cp-alpha}
+\begin{split}
+c_{P}^{\text{init}} \sim \frac{ \beta_L^{\ast} }{ \beta_P } \times \Omega_L(\mathbf{I}) \equiv \alpha \Omega_L(\mathbf{I})
+\end{split}
+\end{equation}
+%
+This equation also makes clear that the penalty component is an extensive function of the system with the units that are consistent with the localization component. Although dimensionless parameter $\beta_L^{\ast}$ is not known \emph{a priori} its magnitude can be easily estimated to obtain a sufficiently large initial guess for $c_P$. For example, an optimization of canonical orbitals $\det \sigma(\mathbf{I})=1$ that aims to stop when the determinant of NLMOs drops below $\text{D}_{\text{min}} = 0.1$ can be initialized adopting the maximum possible value of $\beta_L^{\ast} = 1$ that results in $\alpha = \log^{-1} 10$.
+
+The procedure for tuning $c_P$ is shown as the outer loop of the algorithm in Figure~\ref{fig:cg}. It takes $\text{D}_{\text{min}}$ as a required input and optional parameter $\alpha$ that can improve efficiency of the optimization. %RZZK
+
+%RZZK: Strategy 2: If the precise value of the determinant is necessary the penalty can be replaced with c_P becoming a Langrange multiplier that can be determined precisely. In a MD or geopt, determine $c_P$ once and then fix it for subsequent geometries. This is valid as long as the electronic properties of the system remain the same (e.g. there is not insulator to metal phase transition). 
+
+%RZZK: Dmin is a misnomer.
+
+%%%{\color{red} It might seem like a good idea to choose initial $c_P$ value that minimizes the Frobenius norm of the total gradient. The motivation is that the gradient of the localization component can be balanced as much as possible by the penalty gradient. In this case, the initial $c_P$ is given by the equation below (somewhat problematic index summation). The main reason not to use this initial value is that for $P_k^l$ is zero for all orthonormal states, giving infinitely large coefficient.
+%%%%
+%%%\begin{equation}
+%%%\begin{split}
+%%%c_P = - \frac{ \sum_{nm} {L_m}^n {P_m}^n}{ \sum_{kl} {P_k}^l {P_k}^l}  
+%%%\end{split}
+%%%\end{equation}
+%%%%
+%%%}
 
 
 \begin{figure}
@@ -248,7 +288,7 @@ c_P = - \frac{ \sum_{nm} {L_m}^n {P_m}^n}{ \sum_{kl} {P_k}^l {P_k}^l}
    	%\Procedure{Minimize$\Omega$}{$c_P, \tau, \mathbf{T}_0$}
 	\State Input $\epsilon_{\text{CG}}$ \Comment{Localization convergence threshold}
 	%\State Input $N_{\text{CG}}$, $N_{\text{Outer}}$ \Comment{Max CG, outer iterations}
-	\State Input $\epsilon_\text{Det}$ \Comment{Minimum allowed NLMO determinant}
+	\State Input $\text{D}_{\text{min}}$ \Comment{Minimum allowed NLMO determinant}
    	\State Input $\mathbf{T}_0$ \Comment{Coefficients of the initial states $\ket{i_0}$}
    	\State Input $\mathbf{S}$ \Comment{Basis set overlap}
    	\State Input $\mathbf{L}^K$ \Comment{Basis set representation of the localization operator} 
@@ -261,9 +301,6 @@ c_P = - \frac{ \sum_{nm} {L_m}^n {P_m}^n}{ \sum_{kl} {P_k}^l {P_k}^l}
 	\State $i_{\text{Outer}} \gets 0$ \Comment{Iteration counter}
 	\Repeat \Comment{Loop to change the penalty strength}
 		\State $i_{\text{Outer}} \gets i_{\text{Outer}} + 1$ 
-		\If{$i_{\text{Outer}}>1$} \Comment{$c_P$ is initialized below}
-			\State $c_{P} \gets c_P / 2$ 
-		\EndIf
 		\State StopCG $\gets$ False \Comment{Flag to exit the CG loop}
 		\State $i_{\text{CG}} \gets 0$ \Comment{Iteration counter}
 %		\State $\beta \gets 0$ \Comment{Reset conjugation}
@@ -278,7 +315,7 @@ c_P = - \frac{ \sum_{nm} {L_m}^n {P_m}^n}{ \sum_{kl} {P_k}^l {P_k}^l}
 			\State $\mathbf{L} \gets \text{Eq~(\ref{eq:grad-loc}) and~(\ref{eq:grad-convert})}$ \Comment{Localization gradient}
 			\If{$i_{\text{Outer}}=1$ \textbf{and} $i_{\text{CG}}=1$} 
 				%\State $c_{P} \gets \text{Tr}(\mathbf{L}^{\dagger} \mathbf{P})/\text{Tr}(\mathbf{P}^{\dagger}\mathbf{P})$
-				\State $c_{P} \gets - \Omega_{L}(\Omega_P + \log \epsilon_{\text{Det}})^{-1}$ \Comment{Initial strength}
+				\State $c_{P} \gets \Omega_{L}(\log [\text{Det} / \text{D}_{\text{min}} ])^{-1}$ \Comment{Initial strength}
 			\EndIf
 			\State $\Omega \gets \Omega_{L} + c_P \Omega_{P} $ 
 			\If{$i_{\text{CG}}>1$}
@@ -311,9 +348,13 @@ c_P = - \frac{ \sum_{nm} {L_m}^n {P_m}^n}{ \sum_{kl} {P_k}^l {P_k}^l}
 				\State $\mathbf{a}\gets \mathbf{a} + \alpha \mathbf{D}$ \Comment{Update variational DOFs}
 			\EndIf
 		\Until{StopCG} 
+%RZK: add an additional criterion that prevents high-determinant cases go on forever
 		%\If{$\text{Det} < \text{Det}_{\text{Target}}$ \textbf{or} $i_{\text{Outer}} > N_{\text{Outer}}$}
-		\If{$\text{Det} < \epsilon_{\text{Det}}$}
+		\If{$\text{Det} < \text{D}_{\text{min}}$}
 			\State StopOuter $\gets$ True
+		\EndIf
+		\If{$i_{\text{Outer}}>1$} 
+			\State $c_{P} \gets c_P / 2$ \Comment{Reduce $c_P$}
 		\EndIf
 	\Until{StopOuter}
 	\State $\mathbf{return}$ $\mathbf{T} \gets \mathbf{T}_0 \mathbf{A} $ \Comment{Return NLMOs coefficients}
@@ -323,15 +364,32 @@ c_P = - \frac{ \sum_{nm} {L_m}^n {P_m}^n}{ \sum_{kl} {P_k}^l {P_k}^l}
 \caption{\label{fig:cg} Algorithm for the optimization of NLMOs.}
 \end{figure}
 
+\section{Implementation and computational details}
+
+All calculations were preformed using DFT as implemented in the CP2K software package~\cite{cp2kgeneral}.
+The energy of all molecules was evaluated using periodic boundary conditions.
+CP2K relies on the mixed Gaussian and plane-wave representation of the electronic degree of freedom~\cite{hutter2014cp2k}.
+The localized atom-centered Gaussian basis sets were used for constructing molecular orbitals and the plane waves were used to construct the Kohn-Sham matrix efficiently (RZK: KS is irrelevant).
+The Becke-Lee-Yang-Parr generalized gradient approximation~\cite{becke1988density, lee1988development} was used as the exchange-correlation functional.
+Goedecker-Teter-Hutter pseudopotentials~\cite{goedecker1996separable} were used together with a triple-$\zeta$ Gaussian basis set with two sets of polarization functions for all atoms.
+The energy cutoff of 200 Ry (RZK: seems low, check) was used to define the plane-wave basis set.
+The integration over the Brillouin zone was performed using the gamma point.
+We chose the final determinant cutoff as 0.09~a.u., so we dismiss all generated NLMOs with final determinant less than 0.09 to prevent orbitals from collapsing.
+
+
 
 \section{Results and discussion}
+
+% RZK: report percentages obtained with the previous method. Do we need absolute values of the localization functioal?
 \begin{table}[ht]
 \caption{The Localization functional, final determinant and relative percentage of NLMOs compared with OLMOs}
+\label{tab:loc}
 \centering
-\begin{tabular}{c c c c c}
+\begin{tabular}{l c c c c}
 \hline\hline
-Molecules & CMO &  OLMO$(\%)$ & NLMO$(\%)$ & Final Determinant \\
+Molecules & CMO &  OLMO$(\%)$ & NLMO$(\%)$ & $\det(\sigma)$ \\
 \hline
+%RZZK: use beta values defined in the equations above, a priori and posteriori values of alpha
 H$_2$O & 363 & 288 (20.5) & 230 (20.3) & 0.263 \\ 
 CO$_2$ & 1856 & 654 (64.8) & 474 (27.5) & 0.102 \\
 B$_2$H$_6$ & 1727 & 676 (60.9) & 630 (6.7) & 0.718 \\
@@ -350,18 +408,26 @@ Average & & 69.9 & 16.8 & \\
 \label{table:nonlin}
 \end{table}
 
+% RZK: The graphs are of poor quality, line styles must be changed. What points are we going to include? They must be in agreement with our $c_P$ adjustment algorithm.
+% RZK: We do not need Max determinant because the position of the line is obvious.
+% RZK: We need to reference the algortihm used for OLMO localization because the OLMO line is higher than the maximum in our line.
 \begin{figure}[htbp]
 \includegraphics[scale=0.6]{figure_2.pdf} 
-  \caption{The relationship between relative penalty strength with localization functional ans determinant of C$_6$H$_6$ and C$_{72}$H$_{24}$ molecules}
+  \caption{The relationship between relative penalty strength with localization functional and determinant of C$_6$H$_6$ and C$_{72}$H$_{24}$ molecules}. RZK: Which one is which?
 \end{figure}
 
-To test our newly generated method, we performed the simulations on several systems from simple water molecule to large polymer and graphene systems (H$_2$O, CO$_2$, C$_3$H$_6$, C$_4$H$_6$, B$_2$H$_6$, B$_3$N$_3$H$_6$, C$_6$H$_6$, C$_7$H$_{16}$, C$_2$B$_{10}$H$_{12}$, C$_{20}$H$_{42}$, C$_{72}$H$_{24}$, graphene).
-We employed the DFT method to generate the NLMOs and calculate the related quantities (localization functional and determinants of CMOs, OLMOs and NLMOs).
-The optimization procedure is stable and relatively efficient in most of our tests.
-The results are shown in the Table 1.
-To illustrate the extent of the localization,  the Boys localization functional is calculated to compare between CMOs, OLOMOs and NLMOs.
+This paragraph should be in the Computational details, not results and discussion. To test our newly generated method, we performed the simulations on several systems from simple water molecule to large polymer and graphene systems (H$_2$O, CO$_2$, C$_3$H$_6$, C$_4$H$_6$, B$_2$H$_6$, B$_3$N$_3$H$_6$, C$_6$H$_6$, C$_7$H$_{16}$, C$_2$B$_{10}$H$_{12}$, C$_{20}$H$_{42}$, C$_{72}$H$_{24}$, graphene). %RZK: Unless a system is trivial, it must be properly named and described in sufficient detail so the reader know what molecule you are talking about.
+
+%RZK: What is our motivation in choosing these systems? For simple systems, compare the performance of our method to the previously reported localization method of ZZZ. The main question is whether relaxation of the centroid positions allows to achieve better localization. We would like to see whether the new scheme works for more complex system, in which it is difficult to predict \emph{a priori} the position of the centroids.
+
+%This is already discussed in Computational details: We employed the DFT method to generate the NLMOs and calculate the related quantities (localization functional and determinants of CMOs, OLMOs and NLMOs).
+The localization procedure is stable and relatively efficient in most of our tests.
+The results are shown in the Table~\ref{tab:loc}.
+To illustrate the extent of the localization, the Boys localization functional is calculated to compare between CMOs, OLOMOs and NLMOs. [RZK: We are not doing the Boys localization.]
+
 Yang et al.~\cite{feng2004An_efficient, cui2010efficient} have previously shown that, based on their prefixed centers algorithms, the NLMOs are more compact than the corresponding OLMOs with about $10\%$ to $30\%$ in the value of spread functional.
 Our algorithms gave the relatively similar results with theirs.
+%RZK: do not use table/figure numbers directly. Use \ref, as I demostrated above. 
 The results of localization functional of the CMOs, OLMOs and NLMOs are tabulated in columns of 2-4 of Table 1, respectively.
 The relative decreases of the localization functions of the OLMOs to CMOs and NLMOs to OLMOs are also reported in the table.
 Among our tested systems, the relative percentage of OLMOs compared with CMOs range from $20.5\%$ to $97.5\%$, while that of NLMOs to OLMOS is from $6.7\%$ to $27.5\%$.
@@ -393,10 +459,11 @@ The Previous study has proved that two adjacent C atoms form 3 center 2 electron
 It can be seen from the Fig.3 that both OLMO and NLMO can well present the complicated bonding pattern, without requiring "chemical intuition" and pre-determined orbital centers in the system.
 The obtained NLMOs and OLMOs  are completely equivalent to each other and to the CMOs in their representation of the electronic structure.
 
+%RZK: remove grpahene image. Draw the periodic cell on one of the images. Same for the Zhenzhe's polymer.
 \begin{figure*}[hbpt]
 \centering
 \includegraphics[width=\textwidth]{figure_4.pdf}
-\caption{A plot of the OLMO and NLMO of the $\sigma$ bond and $\pi$ bond in graphene. (isosurface = 0.06)}
+\caption{A plot of the OLMO and NLMO of the $\sigma$ bond and $\pi$ bond in graphene. (isosurface = 0.06~a.u.)}
 \end{figure*}
 
 We now consider the calculations on the periodic graphene sheet.
@@ -414,12 +481,15 @@ But we also encountered several problems  in our method.
 We observed the convergence rate issue in some systems due to we only use the gradient instead of Hessian as the new line search direction.
 Also, as we mentioned before, the Boys localization functional tends to mix the $\sigma$ and $\pi$ bond during the minimization procedure, so the $\pi$ bond of NLMOs we obtained are slightly different from the traditional bonding pattern.
 This problem is possible to be solved if we use Pipek-Mezey~\cite{pipek1989a_fast} localization scheme.
-Even though obtained NLMOs with our method have less orthogonality tails compared with conventional OLMOs, we still could observe the significantly existence of tails when using small isosurface value, which means the generated NLMOs are still not nonorthogonal enough to eliminate the tails when using second order localization functional.
+Even though obtained NLMOs with our method have less orthogonality tails compared with conventional OLMOs, we still could observe the significantly existence of tails when using small isosurface value, which means the generated NLMOs are still not nonorthogonal enough to eliminate the tails when using second order localization functional. 
+We hope this issue can be solved when applying higher order localization functional.
+
+%RZK: isosurface value -> a.u. use words, not just "isosuface="
 \begin{figure}[htbp]
 \includegraphics[scale=0.6]{figure_5.pdf} 
-  \caption{A plot of the NLMO (top) and OLMO (bottom) of the $\pi$ bond in C$_{72}$H$_{24}$ polymer. (isosurface = 0.003)}
+  \caption{Comparison of one of the NLMOs (top) and OLMOs (bottom) or a $\pi$ bond in the conjugated C$_{72}$H$_{24}$ polymer. The isosurface value is set at a relatively low value of 0.003~a.u. to emphasize the tails of the orbitals.)}
 \end{figure}
-We hope this issue can be solved when applying higher order localization functional.
+
 
 %Present localization paths for two systems: simple and challenging. Use $c_P$ values determined by our automatic procedure. Remember that the whole point of creating this method was to make the localization black-box.
 
@@ -440,23 +510,12 @@ Also, we  can conclude that these NOLMOs can be used to present the electronic s
 Moreover, we found that the orthogonal tails are significantly reduced in the NLMOs compared with the OLMOs.
 The faster tail decay for nonorthogonal orbitals is due to more degree of freedom are available without using the orthogonality constrains for nonorthogonal orbitals than orthogonal orbitals.
 
-\section{Computational details}
-All calculations were preformed using DFT as implemented in the CP2K software package.~\cite{cp2kgeneral}
-The energy of all molecules was evaluated using periodic boundary conditions.
-CP2K relies on the mixed Gaussian and plane-wave representation of the electronic degree of freedom~\cite{hutter2014cp2k}.
-The localized atom-centered Gaussian basis sets were used for constructing molecular orbitals and the plane waves were used to construct the Kohn-Sham matrix efficiently.
-The Becke-Lee-Yang-Parr generalized gradient approximation~\cite{becke1988density, lee1988development} was used as the exchange-correlation functional.
-Goedecker-Teter-Hutter pseudopotentials~\cite{goedecker1996separable} were used together with a triple-$\zeta$ Gaussian basis set with two sets of polarization functions for all atoms.
-The energy cutoff of 200 Ry was used to define the plane-wave basis set.
-The integration over the Brillouin zone was performed using the gamma point.
-We chose the final determinant cutoff as 0.09, so we dismiss all generated NLMOs with final determinant less than 0.09 to prevent orbital from collapsing.
-
 \section{Acknowledgments} 
 
 The research was funded by the Natural Sciences and Engineering Research Council of Canada (NSERC) through Discovery
 Grants (RGPIN-2016-0505). The authors are grateful to Compute Canada and, in particular, the McGill HPC Centre for computer time.
 
 \bibliographystyle{apsrev4-1}
-\bibliography{NLMO}
+\bibliography{NLMOs}
 
 \end{document}
