@@ -70,15 +70,20 @@ An algorithm is proposed to adjust the strength of the penalty and produce the r
 The resulting method produces NLMO fast, without requiring any \emph{a priori} knowledge of bonding patterns in the system (i.e. ``chemical intuition'') and is demonstrated to work well a variety of molecules and materials (RZZK: gamma-point only) including large systems with non-trivial bonding. 
 \end{abstract}
 
+%RZZK: mention nonorthogonal maximally localized Wannier functions in the abstract
+
 \maketitle
 
 \section{Introduction} 
 
-% RZZK: Potential reviewers: Weitao?, Marzari, guys who developed LMO for CP2K.
-%RZZK: boraphene?
+% RZZK: Potential reviewers: Weitao?, Marzari, LMO for CP2K developers.
+% RZZK: borophene as a separate article?
+% RZZK: should we do virtual states as well? No, let's leave them for the next paper.
+% RZZK: Next paper can include virtual states (which will require preconditioning) and pipek-mezey localization functional
 
-Spatially localized orbitals are of paramount importance for one-electron theories such as the Hartree-Fock (HF) method and Kohn-Sham density functional theory (DFT) as well as for post-HF wavefunction-based electron correlation methods. 
-Localized orbitals are widely used to describe and visualize chemical bonding between atoms thus helping classify bonds and understand electronic-structure origins of observed properties of atomistic systems. 
+
+Spatially localized orbitals are of paramount importance in one-electron theories such as the Hartree-Fock (HF) method and Kohn-Sham density functional theory (DFT) as well as in post-HF wavefunction-based electron correlation methods. 
+Localized orbitals are widely used to describe and visualize chemical bonding between atoms thus helping classify bonds and understand electronic-structure origins of observed properties of atomistic systems~\cite{RZK}. 
 Furthermore, localized orbitals are the key ingredient in multiple local electronic structure methods~\cite{goedecker1999efficient, bowler2012methods, zalesny2011linear, RZK-localMP2, RZK-localCC} that dramatically reduce the computational cost of modeling electronic properties of large atomistic systems. % RZK: add citations (reviews are preferred) to local electron correlation methds like MP2 and coupled-cluster.
 Spatially localized orbitals are known as localized molecular orbitals (LMOs) in the field of molecular quantum chemistry and maximally localized Wannier functions (MLWFs) in solid state physics and materials science. 
 Here, they will be collectively referred to as LMOs whereas the eigenstates of the effective one-electron Hamiltonian will be called canonical molecular orbitals (CMOs) regardless of whether the system is isolated or treated with periodic boundary conditions.
@@ -104,44 +109,37 @@ Multiple localization functionals have been proposed for molecular systems inclu
 %RZK: list and cite (reviews are preferred) appropriate localization methods (there should be one review by Nicola Marzari). 
 
 Due to the imposed orthogonality condition, OLMOs exhibit small non-zero values even far away from the localization center. 
-These ``orthogonalization tails'' complicate the transferability of chemically relevant electronic-structure information from one system to another and, more importantly, reduce orbital locality making orbital-based local correlation methods less computationally efficient.
+These orthogonalization tails complicate the interpretation of chemically relevant electronic-structure information and make its transferability from one system to another more difficult. More importantly, the tails reduce orbital locality making orbital-based local correlation methods less computationally efficient.
 %
 %RZK: I believe we can comment out the first approach as it is too different from the post-SCF methods that we describe here.
 % To mitigate the undesirable orthogonality effects, it has been proposed to lift the orthogonality constraint during the localization procedure with the goal of increasing the flexibility and locality of LMOs. There are two distinct approaches to construct nonorthogonal LMOs (NLMOs). One approach bypasses CMOs and directly optimizes NLMOs that are constrained to a local space in the variational self-consistent filed (SCF) procedure~\cite{RZK}. Unfortunately, the localization constraints imposed on NLMOs can result in the NLMO energy being substantially higher than that of the fully delocalized state. Another approach is to obtain NLMOs is a post-SCF localization procedure that finds a nonsingular transformation of CMOs. 
 % 
 To mitigate the undesirable orthogonality effects, it has been proposed to replace a unitary transformation of CMOs with a more general nonsingular transformation. This generalization lifts the orthogonality constraint in the localization procedure and increases the number of degrees of freedom available to LMOs~\cite{anderson1968self, diner1968fully, magnasco1974localized, payne1977hartree, mehler1977self, feng2004An_efficient, cui2010efficient}. % RZK: I could have inadvetently used incorrect citations from your list. Please check. 
-It has been found that NLMOs are indeed about $10-30 \%$ more localized than OLMOs if measured by the value of the Boys-Foster (RZK: check which functional is used) functional~\cite{feng2004An_efficient, liu2000nonorthogonal}. 
+It has been found that NLMOs are indeed about $10-30 \%$ more localized than OLMOs if measured by the value of the Boys-Foster functional~\cite{feng2004An_efficient, liu2000nonorthogonal}. %(RZK: check whether the Boys-Foster functional is used indeed)  
 % RZK the following (commented out) sentence is unclear: 
 %The concept of NLMOs was first introduced by Anderson~\cite{anderson1968self} and Diner et al~\cite{diner1968fully} in 1968, but more efforts were devoted to constructing OLMOs previously.
 
 %% RZK: introduction review has stopped here. Intro belo needs further modifications
 Substantial recent efforts have been made to develop reliable algorithms to construct NLMOs~\cite{feng2004An_efficient, liu2000nonorthogonal, peng2013effective, hoyvik2017generalising}. % RZK: add citations for the a-priori methods?
 %
-Unfortunately, the existing methods produce NLMOs that are either still fairly similar to OLMOs (RZK: citation needed) or lead to the linear dependence between the orbitals~\cite{feng2004An_efficient}. 
-The latter problem is particularly widespread and will be referred to as the collapse problem. 
-To overcome this problem, Yang and co-workers~\cite{feng2004An_efficient, cui2010efficient} have developed a method to construct NLMOs by fixing the centers of NLMOs during the minimization of the localization functional. 
-The positions of the centers are predefined using the corresponding OLMOs~\cite{feng2004An_efficient} or obtained good understanding of bonding patterns in the systems (i.e.``chemical intuition'')~\cite{cui2010efficient}.
-While this method solves severe linear dependence issues, it still needs more computational efforts to construct OLMOs centroids and to know the bonding properties in advance, which may limit the application of the method to reltively simple systems.
+Despite noticeable progress the existing methods produce NLMOs that are either still fairly similar to OLMOs (RZK: citation needed) or lead to the linear dependence between the orbitals~\cite{feng2004An_efficient}. 
+%RZK I commented out this sentence because we rarily refer to the collapse. Perhaps we can call it linear dependence probelm throughout the paper: The latter problem is particularly widespread and will be referred to as the collapse problem. 
+%RZZK: Strictly speaking the localization of nonorthogonal orbitals is an ill-defined problem because a global search for the minimum of the localization functional will yield an electronic state with all electrons ``collapsing into the single most localized orbital''
+To overcome the widespread linear dependence problem, Yang and co-workers~\cite{feng2004An_efficient, cui2010efficient} have developed a localization method in which the centers of NLMOs are fixed during the minimization of the localization functional. 
+The positions of the centers are predefined using those of the corresponding OLMOs~\cite{feng2004An_efficient} or simply guessed based on the knowledge of bonding patterns in a system~\cite{cui2010efficient}. %(i.e.``chemical intuition'')
+While this method solves severe linear dependence issues, it requires either computational efforts to construct OLMOs centroids or good understanding of bonding properties in advance, which may limit the application of the method to relatively simple systems.
 
-%RZZK: Strictly speaking the localization of nonorthogonal orbitals is an ill-defined problem because a global search for the minimum of the localization functional will yield an electronic state 
-
-In this paper, we propose a black-box method to construct NLMOs that determines the optimal positions of their centers automatically, without \emph{a priori} knowledge of bonding patterns in the system. 
-The key new component in the proposed method is a penalty function which prevents the orbital ``collapse''. 
-By adjusting the penalty strength, it is possible to find the required balance between the linear independence orthogonality and locality of the orbitals.
-
-RZZK: The inclusion of the penalty term converts the localization procedure into an unconstrained and straightforward optimization problem. Additionally, adjusting the strength of the penalty $c_P$ enables one to achieve the right balance between the nonorthogonality and locality of the orbitals. 
-An algorithm is proposed to adjust the strength of the penalty and produce the right balance between orthogonality and locality of NLMOs. 
-The demonstrate that the proposed method produces NLMO fast,  (i.e. ``chemical intuition'') and is demonstrated to work well a variety of molecules and materials (RZZK: gamma-point only) including large systems with non-trivial bonding. 
+In this paper, we propose a black-box method to construct NLMOs that determines the optimal positions of their centers automatically in an unconstrained and straightforward optimization procedure, without \emph{a priori} knowledge of bonding patterns in the system. 
+The key new component in the proposed method is a penalty function that prevents NLMOs from becoming linear dependent.  
+We present an algorithm for adjusting the penalty strength to find the desirable balance between the nonorthogonality and locality of LMOs. 
+The localization method is demonstrated to work well for a variety of molecules and materials including large systems with non-trivial bonding. 
 
 \section{Theory and algorithms}
 
-% RZK, the main question is: how closely do we follow our own recipe?
-
-The localization procedure starts with a set of occupied  one-electron states $\ket{i_0}$. 
-%RZZK: should we do virtual states as well? No, let's leave it for the next paper.
+The localization procedure starts with a set of occupied one-electron states $\ket{i_0}$. 
 These orbitals are not assumed to be canonical or even orthogonal. 
-However, they are assumed to be normalized. 
-Furthermore, they must be linear independent, that is, their overlap matrix $\sigma_{ji}^0 \equiv \braket{j_0}{i_0}$ must be invertible. 
+However, they are assumed to be normalized, which does not reduce the generality of the method. 
+Furthermore, the initial orbitals must be linear independent, that is, their overlap matrix $\sigma_{ji}^0 \equiv \braket{j_0}{i_0}$ must be invertible. 
 The trial NLMOs are expressed as a linear combination of these initial states
 %
 \begin{equation}
@@ -183,7 +181,12 @@ A normalization constraint can be imposed on NLMOs if their coefficients are exp
 %
 The inclusion of the penalty term converts the localization procedure into an unconstrained and straightforward optimization problem. Additionally, adjusting the strength of the penalty $c_P$ enables one to achieve the right balance between the nonorthogonality and locality of the orbitals (see below). 
 
-In this work, we adopted the following localization functional 
+In this work, we adopted the localization functional proposed by Resta~\cite{resta1998quantum, resta1999electron} and generalized by Berghold \emph{et al.}~\cite{berghold2000general} to three dimensions and simulation cells of general shape and symmetry: 
+% RZK: 
+% berghold2000general --- PHYSICAL REVIEW B, 61, 10040
+% resta1999electron https://doi.org/10.1103/PhysRevLett.82.370
+% resta1998quantum -- Phys. Rev. Lett. 80, 1800 (https://doi.org/10.1103/PhysRevLett.80.1800)
+% silvestrelli1999maximally -- PRB 59 9703
 %
 \begin{equation} \label{eq:fun-loc}
 \begin{split}
@@ -193,14 +196,9 @@ B^{K}_{mn} &= \bra{m_0} \E^{\imi \mathbf{G}_K \cdot \mathbf{\op{r}}} \ket{n_0}
 \end{split}
 \end{equation}
 %
-%RZZK - K is an upper index that is not contravariant, there is also covariant K
-%RZZK - minus sign ensures minimization vs maximazation
-%RZZK - use other functions?
-%RZZK - Explain how Boys functions are obtained.
-where $\omega_K$ , $\mathbf{G}_K$, $\mathbf{\op{r}}$ - RZZK. Summation over $K$ is written out explicitly because $K$ is not an orbital index. This functional can be used for both periodic (ZZZ at $\Gamma$-point only?) and gas-phase systems~\cite{berghold2000general}. In the latter case, it is equivalent to the Boys localization functional~\cite{RZK}.
-% berghold2000general --- PHYSICAL REVIEW B, 61,
+where $\mathbf{\op{r}}$ is the position operator in three dimensions, $\omega_K$ and $\mathbf{G}_K$ are a suitable set of weights and reciprocal lattice vectors, respectively, labels by index $K$~\cite{silvestrelli1999maximally, berghold2000general}. We chose to write the summation over $K$ explicitly because $K$ is not an orbital index. The functional in Eq.~(\ref{eq:fun-loc}) can be used for both gas-phase and periodic systems~\cite{berghold2000general}. In the former case, the functional is equivalent to the Boys-Foster localization~\cite{berghold2000general, resta1999electron}. In the latter case, its applicability is limited to the electronic states described within the $\Gamma$-point approximation.
 
-There exists a multitude of algorithms to carry out the unconstrained minimization of functional $\Omega$ with fixed $c_P$. In this work, we used a simple conjugate gradient algorithm summarized in Figure~\ref{fig:cg}. The gradient ${G_i}^j \equiv \frac{\partial \Omega}{\partial {a^i}_j}$  required in the algorithm is a sum of the localization ${L_i}^j \equiv \frac{\partial \Omega_L}{\partial {a^i}_j}$ and penalty ${P_i}^j \equiv \frac{\partial \Omega_P}{\partial {a^i}_j}$ components
+The unconstrained minimization of functional $\Omega$ with fixed $c_P$ can be carried out with a variety of algorithms. In this work, we used a simple conjugate gradient algorithm summarized in Figure~\ref{fig:cg}. The gradient ${G_i}^j \equiv \frac{\partial \Omega}{\partial {a^i}_j}$  required in the algorithm is a sum of the localization ${L_i}^j \equiv \frac{\partial \Omega_L}{\partial {a^i}_j}$ and penalty ${P_i}^j \equiv \frac{\partial \Omega_P}{\partial {a^i}_j}$ components
 %
 \begin{equation} \label{eq:grad}
 \begin{split}
@@ -249,33 +247,38 @@ c_P^{\text{init}} & \sim \frac{ \Omega_{L}(\mathbf{I}) - \Omega_{L}(\mathbf{A}^{
 \end{split}
 \end{equation}
 %
-where $\mathbf{A}^{\ast}$ denotes the (yet unknown) solution to the minimization problem, $\beta_L^{\ast} \equiv \frac{\Omega_L(\mathbf{I})- \Omega_L(\mathbf{A}^{\ast})}{\Omega_L(\mathbf{I})} \in [0,1]$ is the (positive) expected relative reduction in the localization functional, and $\beta_P^{\ast} \equiv \log \frac{\det \sigma(\mathbf{I})}{ \det \sigma(\mathbf{A}^{\ast}) } \approx \log \frac{\det \sigma(\mathbf{I})}{ \text{D}_{\text{min}} } \equiv \beta_P > 0$ is the logarithm of the ratio of the initial and final determinants. 
-
-The importance of Eq.~(\ref{eq:cp-beta}) is that it allows to express $c_P$ as a dimensionless constant multiplied by $\Omega_L(\mathbf{I})$, which can be easily calculated in the beginning of the optimization procedure:
+where $\mathbf{A}^{\ast}$ denotes the (yet unknown) solution to the minimization problem, 
 %
-\begin{equation} \label{eq:cp-alpha}
-\begin{split}
-c_{P}^{\text{init}} \sim \frac{ \beta_L^{\ast} }{ \beta_P } \times \Omega_L(\mathbf{I}) \equiv \alpha \Omega_L(\mathbf{I})
+\begin{equation} 
+\begin{split} 
+\beta_L^{\ast} \equiv \frac{\Omega_L(\mathbf{I})- \Omega_L(\mathbf{A}^{\ast})}{\Omega_L(\mathbf{I})} \in [0,1]
 \end{split}
 \end{equation}
 %
-The equation also makes clear that the penalty component is an extensive function of a system with the units that are consistent with the localization component. Although the optimal dimensionless parameter $\beta_L^{\ast}$ is not known \emph{a priori} its magnitude can be easily estimated to obtain a sufficiently large initial guess for $c_P$. For example, an optimization of canonical orbitals $\det \sigma(\mathbf{I})=1$ that stops when the NLMO determinant drops below $\text{D}_{\text{min}} = 0.1$ can be initialized by adopting the maximum possible value of $\beta_L^{\ast} = 1$ that results in $\alpha = \log^{-1} 10$.
+is the (positive) expected relative reduction in the localization functional, and 
+%
+\begin{equation} \label{eq:betap}
+\begin{split} 
+\beta_P^{\ast} \equiv \log \frac{\det \sigma(\mathbf{I})}{ \det \sigma(\mathbf{A}^{\ast}) } \approx \log \frac{\det \sigma(\mathbf{I})}{ \text{D}_{\text{min}} } \equiv \beta_P > 0
+\end{split}
+\end{equation}
+%
+is the logarithm of the ratio of the initial and final determinants. 
+The importance of Eqs.~(\ref{eq:cp-beta})--(\ref{eq:betap}) is that they allow to estimate the initial value of $c_P$ as $\Omega_L(\mathbf{I})$, which can be easily calculated in the beginning of the optimization procedure, multiplied by a dimensionless constant $\alpha$
+%
+\begin{equation} \label{eq:cp-alpha}
+\begin{split}
+c_{P}^{\text{init}} = \frac{ \beta_L^{\ast} }{ \beta_P } \times \Omega_L(\mathbf{I}) \equiv \alpha \times \Omega_L(\mathbf{I})
+\end{split}
+\end{equation}
+%
+Eq.~(\ref{eq:cp-alpha}) makes clear that the penalty component is an extensive function of a system with the units that are consistent with the localization component. Although the optimal dimensionless parameter $\beta_L^{\ast}$ is not known \emph{a priori} its magnitude can be easily estimated to obtain a sufficiently large initial guess for $c_P$. For example, an optimization of canonical orbitals $\det \sigma(\mathbf{I})=1$ that stops when the NLMO determinant drops below $\text{D}_{\text{min}} = 0.1$ can be initialized by adopting the maximum possible value of $\beta_L^{\ast} = 1$ that results in $\alpha = \log^{-1} 10$.
 
-The procedure for tuning $c_P$ is shown as the outer loop of the algorithm in Figure~\ref{fig:cg}. It only requires $\text{D}_{\text{min}}$ as input. % and optional parameter $\alpha$ that can improve efficiency of the optimization. %RZZK
+The procedure for tuning $c_P$ is shown as the outer loop of the algorithm in Figure~\ref{fig:cg}. Its only required input is $\text{D}_{\text{min}}$. % and optional parameter $\alpha$ that can improve efficiency of the optimization. %RZZK
 
-%RZZK: Strategy 2: If the precise value of the determinant is necessary the penalty can be replaced with c_P becoming a Langrange multiplier that can be determined precisely. In a MD or geopt, determine $c_P$ once and then fix it for subsequent geometries. This is valid as long as the electronic properties of the system remain the same (e.g. there is not insulator to metal phase transition). 
+%RZZK: Depending on the results discuss the following: If the precise value of the determinant is necessary the penalty can be replaced with c_P becoming a Langrange multiplier that can be determined precisely. In a MD or geopt, determine $c_P$ once and then fix it for subsequent geometries. This is valid as long as the electronic properties of the system remain the same (e.g. there is not insulator to metal phase transition). 
 
 %RZZK: Dmin is a misnomer.
-
-%%%{\color{red} It might seem like a good idea to choose initial $c_P$ value that minimizes the Frobenius norm of the total gradient. The motivation is that the gradient of the localization component can be balanced as much as possible by the penalty gradient. In this case, the initial $c_P$ is given by the equation below (somewhat problematic index summation). The main reason not to use this initial value is that for $P_k^l$ is zero for all orthonormal states, giving infinitely large coefficient.
-%%%%
-%%%\begin{equation}
-%%%\begin{split}
-%%%c_P = - \frac{ \sum_{nm} {L_m}^n {P_m}^n}{ \sum_{kl} {P_k}^l {P_k}^l}  
-%%%\end{split}
-%%%\end{equation}
-%%%%
-%%%}
 
 
 \begin{figure}
@@ -290,9 +293,8 @@ The procedure for tuning $c_P$ is shown as the outer loop of the algorithm in Fi
    	\State Input $\mathbf{T}_0$ \Comment{Coefficients of the initial states $\ket{i_0}$}
    	\State Input $\mathbf{S}$ \Comment{Basis set overlap}
    	\State Input $\mathbf{L}^K$ \Comment{Basis set representation of the localization operator} 
-   	%RZZK: Localization matrix L is not defined. Loop over K?
    	\State $\mathbf{\sigma}_0 \gets \mathbf{T}_0^{\dagger} \mathbf{ST}_0$ \Comment{Initial orbital overlap} 
-   	\State $\mathbf{B}^{K} \gets \mathbf{T}_0^{\dagger} \mathbf{L}^K \mathbf{T}_0$ \Comment{Initial localization matrix} 
+   	\State $\mathbf{B}^{K} \gets \mathbf{T}_0^{\dagger} \mathbf{L}^K \mathbf{T}_0$ \Comment{Initial localization matrix, Eq.~(\ref{eq:fun-loc})} 
 	\State $\mathbf{a} \gets \mathbf{I}$ \Comment{Guess variational DOFs}
 	%\State Converged $\gets$ False
 	\State StopOuter $\gets$ False \Comment{Flag to exit the outer loop}
@@ -364,7 +366,8 @@ The procedure for tuning $c_P$ is shown as the outer loop of the algorithm in Fi
 
 \section{Implementation and computational details}
 
-All calculations were preformed using DFT as implemented in the CP2K software package~\cite{cp2kgeneral}.
+The localization procedure was implemented in the CP2K software package~\cite{cp2kgeneral}. 
+Initial delocalized orbitals All calculations were preformed using DFT as implemented in the CP2K software package~\cite{cp2kgeneral}.
 The energy of all molecules was evaluated using periodic boundary conditions.
 CP2K relies on the mixed Gaussian and plane-wave representation of the electronic degree of freedom~\cite{hutter2014cp2k}.
 The localized atom-centered Gaussian basis sets were used for constructing molecular orbitals and the plane waves were used to construct the Kohn-Sham matrix efficiently (RZK: KS is irrelevant).
