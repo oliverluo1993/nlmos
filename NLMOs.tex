@@ -77,11 +77,11 @@ The resulting method produces NLMO fast, without requiring any \emph{a priori} k
 % RZZK: Potential reviewers: Weitao?, Marzari, guys who developed LMO for CP2K.
 %RZZK: boraphene?
 
-In one-electron theories such as Hartree-Fock method and Kohn-Sham density functional theory (DFT), spatially localized orbitals are constructed by finding a linear transformation of the occupied eigenstates of the effective Hamiltonian that minimizes the spread of individual orbitals. 
+In one-electron theories such as the Hartree-Fock method and Kohn-Sham density functional theory (DFT), spatially localized orbitals are constructed by finding a linear transformation of the occupied eigenstates of the effective Hamiltonian that minimizes the spread of individual orbitals. 
 These orbitals are known as localized molecular orbitals (LMOs) in the field of molecular quantum chemistry and maximally localized Wannier functions (MLWFs) in solid state physics. 
 Here, they will be collectively referred to as LMOs whereas the eigenstates of the effective Hamiltonian will be called canonical molecular orbitals (CMOs) regardless of whether the system is isolated or under periodic boundary conditions.
 While LMOs and CMOs provide two equivalent representations of the electron distribution and all other observable properties of a system, LMOs are of paramount importance in one-electron theories and far beyond.  
-LMOs are widely used to describe and visualize chemical bonding between atoms in terms of localized distributions of electrons thus helping classify bonds and understand the electronic-structure origin of observed properties. 
+LMOs are widely used to describe and visualize chemical bonding between atoms in terms of localized distributions of electrons thus helping classify bonds and understand electronic-structure origins of observed properties. 
 Moreover, LMOs are the key ingredient in many local electronic structure methods~\cite{goedecker1999efficient, bowler2012methods, zalesny2011linear, RZK-localMP2, RZK-localCC} that dramatically reduce the computational cost of modeling electronic properties of large atomistic systems.
 % RZK: add citations (reviews are preferred) to local electron correlation methds like MP2 and coupled-cluster.
 
@@ -101,29 +101,28 @@ Moreover, LMOs are the key ingredient in many local electronic structure methods
 %  (\bibinfo{publisher}{Springer Science \& Business Media},
 %  \bibinfo{year}{2011}).
 
-In traditional localization methods, LMOs are obtained by finding a unitary transformation of CMOs that extremizes a localization functional. [RZK: repetition]
-Since CMOs are orthogonal and a unitary transformation preserves the overlap between the orbitals, LMOs constructed in this way are orthogonal (OLMOs)~\cite{weinstein1971localized}.
+In traditional localization methods, LMOs are obtained by finding a unitary transformation of CMOs that extremizes a localization functional. 
+%[RZZK: repetition]
+Since CMOs are orthogonal and a unitary transformation preserves the overlap between the orbitals, LMOs obtained in this way are orthogonal (OLMOs) by construction~\cite{weinstein1971localized}.
 Multiple localization functionals have been proposed for molecular systems including Boys-Foster~\cite{boys1960construction}, Edmiston-Ruedenberg~\cite{bytautas2002electron, bytautas2003split, edmiston1963localized}, Pipek-Mezey~\cite{pipek1989a_fast}, and Von Niessen~\cite{niessen1972density}. In condensed phase physics and materials science, RZK. 
-%RZK:  Cite localization methods (reviews are preferred) from condensed phase physics (there should be one by Marzari). 
+%RZK:  menstion and cite localization methods (reviews are preferred) from condensed phase physics (there should be one review by Marzari). 
 %
 Due to the imposed orthogonality condition, OLMOs still exhibit small non-zero values even far away from the localization center. 
 These ``orthogonalization tails'' complicate transferability of chemically relevant electronic-structure information from one system to another and, more importantly, reduce orbital locality making orbital-based local correlation methods less computationally efficient.
-To mitigate the undesirable effect of ``orthogonalization tails'', it has been proposed to lift the orthogonality constraint in the localization procedure the goal of increasing the flexibility and locality of LMOs. 
-%RZK: presentation problem: do we want to talk about NLMOs, that are strictly localized a priori? 
-It has been found that nonorthogonal LMOs (NLMOs) are indeed about $10-30 \%$ more localized than OLMOs~\cite{feng2004An_efficient, liu2000nonorthogonal}. 
-Nonorthogonal LMOs (NLMOs)~\cite{anderson1968self, diner1968fully, magnasco1974localized, payne1977hartree, mehler1977self} are obtained by nonsingular transformation from CMOs without the orthogonality condition, 
-% RZK the following sentence is unclear: The concept of NLMOs was first introduced by Anderson~\cite{anderson1968self} and Diner et al~\cite{diner1968fully} in 1968, but more efforts were devoted to constructing OLMOs previously.
-Substantial recent effort has been made to develop reliable algorithms to construct NLMOs~\cite{feng2004An_efficient, liu2000nonorthogonal, peng2013effective, hoyvik2017generalising}. % RZK: add citations for the a-priori methods?
+To mitigate the undesirable orthogonality effects, it has been proposed to lift the orthogonality constraint in the localization procedure with the goal of increasing the flexibility and locality of LMOs. 
 
-One way to construct NLMOs is to employ the variational optimization by restricting the variational space to a local space.
-The NLMO is then expanded in the variational space, which helps to eliminate the long-range tails.
-However, this approach may introduce error due to the basis set truncation and lead to result in the very approximation NLMOs because the choice of the local space may be different from the true localization region.
+There are two distinct approaches to construct nonorthogonal LMOs (NLMOs). One approach bypasses CMOs and directly optimizes NLMOs that are constrained to a local space in the variational self-consistent filed (SCF) procedure~\cite{RZK}. Unfortunately, the localization constraints imposed on NLMOs can result in the NLMO energy being substantially higher than that of the fully delocalized state. Another approach is to obtain NLMOs in a post-SCF localization procedure by finding a nonsingular transformation of CMOs that, unlike unitary transformation, lifts the orthogonality constraint off LMOs~\cite{anderson1968self, diner1968fully, magnasco1974localized, payne1977hartree, mehler1977self, feng2004An_efficient, cui2010efficient}.
+% RZK: re-organized citations 
+It has been found that NLMOs are indeed about $10-30 \%$ more localized than OLMOs~\cite{feng2004An_efficient, liu2000nonorthogonal}. 
+% RZK the following (commented out) sentence is unclear: 
+%The concept of NLMOs was first introduced by Anderson~\cite{anderson1968self} and Diner et al~\cite{diner1968fully} in 1968, but more efforts were devoted to constructing OLMOs previously.
+Substantial recent efforts have been made to develop reliable algorithms to construct NLMOs~\cite{feng2004An_efficient, liu2000nonorthogonal, peng2013effective, hoyvik2017generalising}. % RZK: add citations for the a-priori methods?
 
-Other studies proposed another method to obtain NLMOs by linear transformations of CMOs with relaxation of the orthogonality constraint.~\cite{feng2004An_efficient, cui2010efficient} 
-The limitation of this method is that the final MOs either are still fairly orthogonal and similar localization compared with OLMOs (RZK: citation needed) or lead to the linear dependence between the orbitals.~\cite{feng2004An_efficient} (we will refer to the linear dependence problem as the collapse problem.)
-To overcome the collapse problem, Yang and co-workers~\cite{feng2004An_efficient, cui2010efficient}  developed a method to construct NLMOs by fixing the centers of NLMOs during the minimization of the spread functional. 
-The positions of the centers are predefined from the corresponding OLMOs~\cite{feng2004An_efficient} or good understanding of bonding patterns in the systems (i.e.``chemical intuition'')~\cite{cui2010efficient}.
-While this method solved the linear dependence problem, it still needs more computational efforts to construct OLMOs centroids and to know the bonding properties in advance by using "chemical intuition", which may limit the application of the method.
+Unfortunately, the existing methods produce NLMOs that are either still fairly similar to OLMOs (RZK: citation needed) or lead to the linear dependence between the orbitals~\cite{feng2004An_efficient}. 
+The latter problem is particularly widespread and will referred here as as the collapse problem. 
+To overcome this problem, Yang and co-workers~\cite{feng2004An_efficient, cui2010efficient} have developed a method to construct NLMOs by fixing the centers of NLMOs during the minimization of the spread functional. 
+The positions of the centers are predefined from the corresponding OLMOs~\cite{feng2004An_efficient} or obtained good understanding of bonding patterns in the systems (i.e.``chemical intuition'')~\cite{cui2010efficient}.
+While this method solves severe linear dependence issues, it still needs more computational efforts to construct OLMOs centroids and to know the bonding properties in advance, which may limit the application of the method to reltively simple systems.
 
 %RZZK: Strictly speaking the localization of nonorthogonal orbitals is an ill-defined problem because a global search for the minimum of the localization functional will yield an electronic state 
 
