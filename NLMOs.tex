@@ -77,14 +77,11 @@ The resulting method produces NLMO fast, without requiring any \emph{a priori} k
 % RZZK: Potential reviewers: Weitao?, Marzari, guys who developed LMO for CP2K.
 %RZZK: boraphene?
 
-In one-electron theories such as the Hartree-Fock method and Kohn-Sham density functional theory (DFT), spatially localized orbitals are constructed by finding a linear transformation of the occupied eigenstates of the effective Hamiltonian that minimizes the spread of individual orbitals. 
-These orbitals are known as localized molecular orbitals (LMOs) in the field of molecular quantum chemistry and maximally localized Wannier functions (MLWFs) in solid state physics. 
-Here, they will be collectively referred to as LMOs whereas the eigenstates of the effective Hamiltonian will be called canonical molecular orbitals (CMOs) regardless of whether the system is isolated or under periodic boundary conditions.
-While LMOs and CMOs provide two equivalent representations of the electron distribution and all other observable properties of a system, LMOs are of paramount importance in one-electron theories and far beyond.  
-LMOs are widely used to describe and visualize chemical bonding between atoms in terms of localized distributions of electrons thus helping classify bonds and understand electronic-structure origins of observed properties. 
-Moreover, LMOs are the key ingredient in many local electronic structure methods~\cite{goedecker1999efficient, bowler2012methods, zalesny2011linear, RZK-localMP2, RZK-localCC} that dramatically reduce the computational cost of modeling electronic properties of large atomistic systems.
-% RZK: add citations (reviews are preferred) to local electron correlation methds like MP2 and coupled-cluster.
-
+Spatially localized orbitals are of paramount importance for one-electron theories such as the Hartree-Fock (HF) method and Kohn-Sham density functional theory (DFT) as well as for post-HF wavefunction-based electron correlation methods. 
+Localized orbitals are widely used to describe and visualize chemical bonding between atoms thus helping classify bonds and understand electronic-structure origins of observed properties of atomistic systems. 
+Furthermore, localized orbitals are the key ingredient in multiple local electronic structure methods~\cite{goedecker1999efficient, bowler2012methods, zalesny2011linear, RZK-localMP2, RZK-localCC} that dramatically reduce the computational cost of modeling electronic properties of large atomistic systems. % RZK: add citations (reviews are preferred) to local electron correlation methds like MP2 and coupled-cluster.
+Spatially localized orbitals are known as localized molecular orbitals (LMOs) in the field of molecular quantum chemistry and maximally localized Wannier functions (MLWFs) in solid state physics and materials science. 
+Here, they will be collectively referred to as LMOs whereas the eigenstates of the effective one-electron Hamiltonian will be called canonical molecular orbitals (CMOs) regardless of whether the system is isolated or treated with periodic boundary conditions.
 
 %\bibitem{bowler2012methods}
 %\bibinfo{author}{Bowler, D.} \& \bibinfo{author}{Miyazaki, T.}
@@ -252,7 +249,7 @@ c_P^{\text{init}} & \sim \frac{ \Omega_{L}(\mathbf{I}) - \Omega_{L}(\mathbf{A}^{
 %
 where $\mathbf{A}^{\ast}$ denotes the (yet unknown) solution to the minimization problem, $\beta_L^{\ast} \equiv \frac{\Omega_L(\mathbf{I})- \Omega_L(\mathbf{A}^{\ast})}{\Omega_L(\mathbf{I})} \in [0,1]$ is the (positive) expected relative reduction in the localization functional, and $\beta_P^{\ast} \equiv \log \frac{\det \sigma(\mathbf{I})}{ \det \sigma(\mathbf{A}^{\ast}) } \approx \log \frac{\det \sigma(\mathbf{I})}{ \text{D}_{\text{min}} } \equiv \beta_P > 0$ is the logarithm of the ratio of the initial and final determinants. 
 
-The importance of Eq.~(\ref{eq:cp-beta}) is that it allows to express $c_P$ as a multiple of $\Omega_L(\mathbf{I})$, which is known in the beginning of the optimization procedure:
+The importance of Eq.~(\ref{eq:cp-beta}) is that it allows to express $c_P$ as a dimensionless constant multiplied by $\Omega_L(\mathbf{I})$, which can be easily calculated in the beginning of the optimization procedure:
 %
 \begin{equation} \label{eq:cp-alpha}
 \begin{split}
@@ -260,9 +257,9 @@ c_{P}^{\text{init}} \sim \frac{ \beta_L^{\ast} }{ \beta_P } \times \Omega_L(\mat
 \end{split}
 \end{equation}
 %
-This equation also makes clear that the penalty component is an extensive function of the system with the units that are consistent with the localization component. Although dimensionless parameter $\beta_L^{\ast}$ is not known \emph{a priori} its magnitude can be easily estimated to obtain a sufficiently large initial guess for $c_P$. For example, an optimization of canonical orbitals $\det \sigma(\mathbf{I})=1$ that aims to stop when the determinant of NLMOs drops below $\text{D}_{\text{min}} = 0.1$ can be initialized adopting the maximum possible value of $\beta_L^{\ast} = 1$ that results in $\alpha = \log^{-1} 10$.
+The equation also makes clear that the penalty component is an extensive function of a system with the units that are consistent with the localization component. Although the optimal dimensionless parameter $\beta_L^{\ast}$ is not known \emph{a priori} its magnitude can be easily estimated to obtain a sufficiently large initial guess for $c_P$. For example, an optimization of canonical orbitals $\det \sigma(\mathbf{I})=1$ that stops when the NLMO determinant drops below $\text{D}_{\text{min}} = 0.1$ can be initialized by adopting the maximum possible value of $\beta_L^{\ast} = 1$ that results in $\alpha = \log^{-1} 10$.
 
-The procedure for tuning $c_P$ is shown as the outer loop of the algorithm in Figure~\ref{fig:cg}. It takes $\text{D}_{\text{min}}$ as a required input and optional parameter $\alpha$ that can improve efficiency of the optimization. %RZZK
+The procedure for tuning $c_P$ is shown as the outer loop of the algorithm in Figure~\ref{fig:cg}. It only requires $\text{D}_{\text{min}}$ as input. % and optional parameter $\alpha$ that can improve efficiency of the optimization. %RZZK
 
 %RZZK: Strategy 2: If the precise value of the determinant is necessary the penalty can be replaced with c_P becoming a Langrange multiplier that can be determined precisely. In a MD or geopt, determine $c_P$ once and then fix it for subsequent geometries. This is valid as long as the electronic properties of the system remain the same (e.g. there is not insulator to metal phase transition). 
 
