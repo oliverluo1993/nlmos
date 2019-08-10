@@ -83,9 +83,9 @@ The resulting method produces NLMO fast, without requiring any \emph{a priori} k
 % RZZK: Next paper can include virtual states (which will require preconditioning) and pipek-mezey localization functional
 
 Spatially localized orbitals are of paramount importance in one-electron theories such as the Hartree-Fock (HF) method and Kohn-Sham density functional theory (DFT) as well as in post-HF wavefunction-based electron correlation methods. 
-Localized orbitals are widely used to describe and visualize chemical bonding between atoms thus helping classify bonds and understand electronic-structure origins of observed properties of atomistic systems~\cite{RZK}. 
-Furthermore, localized orbitals are the key ingredient in multiple local electronic structure methods~\cite{goedecker1999efficient, bowler2012methods, zalesny2011linear, pulay1986orbital, saebo2001low, pisani2005local, hampel1996local, forner1997numerical} that dramatically reduce the computational cost of modeling electronic properties of large atomistic systems.~\cite{saebo1993local, schutz1999low, hetzer2000low, schutz2001low}
-Spatially localized orbitals are known as localized molecular orbitals (LMOs) in the field of molecular quantum chemistry and maximally localized Wannier functions (MLWFs) in solid state physics and materials science. 
+Localized orbitals are widely used to visualize chemical bonding between atoms and thus help classify bonds and understand electronic-structure origins of observed properties of atomistic systems~\cite{RZK}. 
+Furthermore, localized orbitals are the key ingredient in multiple local electronic structure methods~\cite{goedecker1999efficient, bowler2012methods, zalesny2011linear, pulay1986orbital, saebo2001low, pisani2005local, hampel1996local, forner1997numerical} that dramatically reduce the computational cost of modeling electronic properties of large atomistic systems~\cite{saebo1993local, schutz1999low, hetzer2000low, schutz2001low}. 
+Localized orbitals are known as localized molecular orbitals (LMOs) in the field of molecular quantum chemistry and maximally localized Wannier functions (MLWFs) in solid state physics and materials science. 
 Here, they will be collectively referred to as LMOs whereas the eigenstates of the effective one-electron Hamiltonian will be called canonical molecular orbitals (CMOs) regardless of whether the system is isolated or treated with periodic boundary conditions.
 
 %\bibitem{bowler2012methods}
@@ -174,10 +174,12 @@ A normalization constraint can be imposed on NLMOs if their coefficients are exp
 %
 \begin{equation}
 \begin{split}
-{A^i}_j = {a^i}_{j} ({a^k}_{j} \sigma^0_{kl}{a^l}_{j})^{-\frac{1}{2}}
+{A^i}_j = {a^i}_{j} ({a^k}_{j} \sigma^0_{kl}{a^l}_{j})^{-\frac{1}{2}} \equiv {a^i}_{j} N_j ,
 \end{split}
 \end{equation}
 %
+where the $\mathbf{a}$-dependent normalization coefficient $N_j$ is defined for brevity. 
+
 The inclusion of the penalty term converts the localization procedure into an unconstrained and straightforward optimization problem. Additionally, adjusting the strength of the penalty $c_P$ enables one to achieve the right balance between the nonorthogonality and locality of the orbitals (see below). 
 
 In this work, we adopted the localization functional proposed by Resta~\cite{resta1998quantum, resta1999electron} and generalized by Berghold \emph{et al.}~\cite{berghold2000general} to three dimensions and simulation cells of general shape and symmetry: 
@@ -187,6 +189,7 @@ In this work, we adopted the localization functional proposed by Resta~\cite{res
 % resta1998quantum -- Phys. Rev. Lett. 80, 1800 (https://doi.org/10.1103/PhysRevLett.80.1800)
 % silvestrelli1999maximally -- PRB 59 9703
 %
+% RZK: do we really use log function? If not, fix the gradient (PM and Boys are consistent then) and re-write the PM section to include only the kernel instead of all three equation (alpha->K). If yes, the PM gradient must be different.
 \begin{equation} \label{eq:fun-loc}
 \begin{split}
 \Omega_L(\mathbf{A}) &= - \sum_K \sum_i \omega_K \log \vert z_{i}^{K} \vert^2, \\
@@ -227,7 +230,7 @@ These components can be readily expressed in terms of the derivatives with respe
 %
 \begin{equation} \label{eq:grad-convert}
 \begin{split}
-{X_i}^j & = \tilde{X}{_k}^l \frac{\partial {A^k}_l}{\partial {a^i}_j} = \tilde{X}{_i}^j \sigma_{jj}^{-\frac{1}{2}} - \sigma_{in}^0 {A^n}_j  \sigma_{jj}^{-\frac{1}{2}} {A^m}_j \tilde{X}{_m}^j
+{X_i}^j & = \tilde{X}{_k}^l \frac{\partial {A^k}_l}{\partial {a^i}_j} = \left[ \tilde{X}{_i}^j - ( \sigma_{in}^0 {A^n}_j ) ( {A^m}_j \tilde{X}{_m}^j ) \right] N_j 
 \end{split}
 \end{equation}
 %
@@ -385,7 +388,7 @@ The procedure for tuning $c_P$ is shown as the outer loop of the algorithm in Fi
 \section{Computational details}
 
 The localization procedure is implemented in the CP2K software package~\cite{cp2kgeneral}. 
-We found NLMOs for several systems ranging from a simple water molecule to complex molecules with non-trivial bonding patterns to large periodic systems. 
+We constructed NLMOs for several systems ranging from a simple water molecule to complex molecules with non-trivial bonding patterns to large periodic systems. 
 CMOs were obtained for all systems using the conventional SCF procedure in the DFT module of CP2K and then used as the initial states in the localization procedure. 
 The Becke-Lee-Yang-Parr generalized gradient approximation~\cite{becke1988density, lee1988development} was used as the exchange-correlation functional.
 Goedecker-Teter-Hutter pseudopotentials~\cite{goedecker1996separable} were used together with a triple-$\zeta$ atom-centered Gaussian basis set with two sets of polarization functions for all atoms. 
@@ -413,12 +416,12 @@ The integration over the Brillouin zone was performed using the single $\Gamma$ 
 % RZK: use beta values defined in the equations above instead of percentage redaction, a priori and posteriori values of alpha
 
 \begin{table*}[tb]
-\caption{The Localization functional, final determinant and relative percentage of NLMOs compared with OLMOs}
+\caption{The localization functional, final determinant and relative percentage of NLMOs compared with OLMOs.}
 \label{tab:loc}
 \centering
 \begin{tabular}{l c c c c}
 \hline\hline
-Molecules & $\varDelta_{OLMOs/CMOs}$  & $\varDelta_{NLMOs/CMOs}$ & $\varDelta_{NLMOs/OLMOs}$ & det($\sigma$) \\
+Molecules & $\Delta_{\text{OLMOs/CMOs}}$  & $\Delta_{\text{NLMOs/CMOs}}$ & $\Delta_{\text{NLMOs/OLMOs}}$ & $\det(\sigma)$ \\
 \hline
 H$_2$O & 0.221 & 0.364 & 0.183 & 0.100 \\ 
 CO$_2$ & 0.650 & 0.755 & 0.302 & 0.025 \\
@@ -432,7 +435,9 @@ Heptane (C$_7$H$_{16}$) & 0.889 & 0.902 & 0.120 & 0.122 \\
 Icosane (C$_{20}$H$_{42}$) & 0.975 & 0.978 & 0.112 & 0.053 \\ 
 Decacyclene (C$_{72}$H$_{24}$) & 0.935 & 0.947 & 0.161 & 0.042 \\ 
 Graphene & 0.769 & 0.816 & 0.205 & 0.025 \\
+\hline
 Average & 0.702 & 0.757 & 0.179 & 0.114 \\
+\hline
 \hline
 \end{tabular}
 \label{table:nonlin}
@@ -449,7 +454,7 @@ Average & 0.702 & 0.757 & 0.179 & 0.114 \\
 \begin{figure*}[hbpt]
 \centering
 \includegraphics[width=\textwidth]{figure_2.pdf}
-\caption{The dependence of localization function and determinant of NLMO overlap on $\alpha$}
+\caption{The dependence of the localization functional and determinant of NLMO overlap on $\alpha$ -- the adjustable part of the penalty strength.}
 \label{fig:alpha}
 \end{figure*}
 
