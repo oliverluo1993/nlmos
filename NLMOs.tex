@@ -48,7 +48,7 @@
 
 
 \title{
-Direct unconstrained localization of nonorthogonal one-electron orbitals
+Direct generalized and unconstrained localization of  one-electron orbitals
 }
 
 \author{Ziling Luo}
@@ -81,9 +81,9 @@ The resulting method produces NLMO fast, without requiring any \emph{a priori} k
 % RZZK: should we do virtual states as well? No, let's leave them for the next paper.
 % RZZK: Next paper can include virtual states (which will require preconditioning) and pipek-mezey localization functional
 
-Spatially localized orbitals are of paramount importance in one-electron theories such as the Hartree-Fock (HF) method and Kohn-Sham density functional theory (DFT) as well as in post-HF wavefunction-based electron correlation methods. 
+Spatially localized orbitals are of paramount importance in one-electron theories such as the Hartree-Fock (HF) method and Kohn-Sham density functional theory (DFT) as well as in post-HF wavefunction-based electron correlation methods.
 Localized orbitals are widely used to describe and visualize chemical bonding between atoms thus helping classify bonds and understand electronic-structure origins of observed properties of atomistic systems~\cite{RZK}. 
-Furthermore, localized orbitals are the key ingredient in multiple local electronic structure methods~\cite{goedecker1999efficient, bowler2012methods, zalesny2011linear, pulay1986orbital, saebo2001low, pisani2005local, hampel1996local, forner1997numerical} that dramatically reduce the computational cost of modeling electronic properties of large atomistic systems.~\cite{saebo1993local, schutz1999low, hetzer2000low, schutz2001low}
+Furthermore, localized orbitals are the key ingredient in multiple local electronic structure methods~\cite{goedecker1994efficient, bowler2012methods, zalesny2011linear, pulay1986orbital, saebo2001low, pisani2005local, hampel1996local, forner1997numerical} that dramatically reduce the computational cost of modeling electronic properties of large atomistic systems.~\cite{saebo1993local, schutz1999low, hetzer2000low, schutz2001low}
 Spatially localized orbitals are known as localized molecular orbitals (LMOs) in the field of molecular quantum chemistry and maximally localized Wannier functions (MLWFs) in solid state physics and materials science. 
 Here, they will be collectively referred to as LMOs whereas the eigenstates of the effective one-electron Hamiltonian will be called canonical molecular orbitals (CMOs) regardless of whether the system is isolated or treated with periodic boundary conditions.
 
@@ -127,7 +127,12 @@ To overcome the widespread linear dependence problem, Yang and co-workers~\cite{
 The positions of the centers are predefined using those of the corresponding OLMOs~\cite{feng2004An_efficient} or simply guessed based on the knowledge of bonding patterns in a system~\cite{cui2010efficient}. %(i.e.``chemical intuition'')
 While this method solves severe linear dependence issues, it requires either computational efforts to construct OLMOs centroids or good understanding of bonding properties in advance, which may limit the application of the method to relatively simple systems.
 
-In this paper, we propose a black-box method to construct NLMOs that determines the optimal positions of their centers automatically in an unconstrained and straightforward optimization procedure, without \emph{a priori} knowledge of bonding patterns in the system. 
+Out of several different localization schemes listed above, Boys-Foster localization functional~\cite{boys1960construction} is probably the most popular and commonly implemented.
+In contract with Boys-Foster scheme, Pipek-Mezey method~\cite{pipek1989a_fast} does not mix between $\sigma$ and $\pi$ bonds, which helps to build a better understanding of the bonding pattern in the materials.
+This scheme is based on maximizing the Mulliken charge~\cite{11111} or L{\"o}wdin charge~\cite{2222} of each orbital.
+
+In this paper, we propose a direct and black-box method to construct LMOs that determines the optimal positions of their centers automatically in an unconstrained and straightforward optimization procedure, without \emph{a priori} knowledge of bonding patterns in the system.
+In this new proposed method, we developed a generalize localization method which allows users to control the orthogonality of the LMOs and select preferred localization schemes.
 The key new component in the proposed method is a penalty function that prevents NLMOs from becoming linear dependent.  
 We present an algorithm for adjusting the penalty strength to find the desirable balance between the nonorthogonality and locality of LMOs. 
 The localization method is demonstrated to work well for a variety of molecules and materials including large systems with non-trivial bonding. 
