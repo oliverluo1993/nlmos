@@ -1,4 +1,4 @@
- \documentclass[aps,prl,reprint,amsmath,amssymb]{revtex4-1}
+\documentclass[aps,prl,reprint,amsmath,amssymb]{revtex4-1}
 
 \usepackage{epsfig,color,graphicx}
 %\usepackage{algorithmic}
@@ -126,7 +126,7 @@ Despite noticeable progress the existing methods produce NLMOs that are either s
 %RZZK: Strictly speaking the localization of nonorthogonal orbitals is an ill-defined problem because a global search for the minimum of the localization functional will yield an electronic state with all electrons ``collapsing into the single most localized orbital''
 To overcome the widespread linear dependence problem, Yang and co-workers~\cite{feng2004An_efficient, cui2010efficient} have developed a localization method in which the centers of NLMOs are fixed during the minimization of the localization functional. 
 The positions of the centers are predefined using those of the corresponding OLMOs~\cite{feng2004An_efficient} or simply guessed based on the knowledge of bonding patterns in a system~\cite{cui2010efficient}. %(i.e.``chemical intuition'')
-While this method solves severe linear dependence issues, it requires either computational efforts to construct OLMOs centroids or good understanding of bonding properties in advance, which may limit the application of the method to relatively simple systems.
+While this method solves severe linear dependence issues, it requires either computational efforts to construct OLMOs centroids or good understanding of bonding properties in advance,which may limit the application of the method to relatively simple systems.
 
 Out of several different localization schemes listed above, Boys-Foster localization functional~\cite{boys1960construction} is probably the most popular and commonly implemented.
 In contract with Boys-Foster scheme, Pipek-Mezey method~\cite{pipek1989a_fast} does not mix between $\sigma$ and $\pi$ bonds, which helps to build a better understanding of the bonding pattern in the materials.
@@ -468,6 +468,11 @@ Average & 0.702 & 0.757 & 0.179 & 0.114 \\
 Among all of our tested systems, the optimization procedure is stable and efficient based on the conjugate gradient method. 
 To illustrate the extent and orthogonality of the final localized MOs, the Berghold functionals ~\cite{berghold2000general}  are calculated to compare the difference between CMOs, OLMOs and NLMOs.
 The results are shown in the Table~\ref{tab:loc}.
+The determinants controlled by the penalty strength $\alpha$ and final determinant cutoff are listd in the last column of Table~\ref{tab:loc} from all systems, which also indicate the orthogonality of the obtained NLMOs.
+Even though the final determinant could go down to extremely small value (such as $10^{-7}$) in some systems, we set 0.02 a.u. as the final determinant cutoff since we suspect some generated NLMOs may become linear dependent with those extremely small determinant values.
+So we dismiss all generated NLMOs with final determinant less than 0.02 a.u. to prevent orbitals from collapsing.
+The final determinant value and further visual detection have shown that all final obtained NLMOs are linear independent between each other.
+
 Yang et al.~\cite{feng2004An_efficient, cui2010efficient} have proved that, the NLMOs are more compact than the corresponding OLMOs with about $10\%$ to $30\%$ in the value of spread functional based on their prefixed centers algorithms.
 Our algorithms gave the relatively similar results with theirs.
 The relative decreases of the localization functions of the OLMOs to CMOs and NLMOs to OLMOs are tabulated in the columns of 2-4 of Table~\ref{tab:loc}, respectively.
@@ -476,11 +481,6 @@ The average  localization functional decreases of OLMOs and NLMOs to CMOs are 0.
 Comparison between the NLMOs and OLMOs based on our algorithms gives similar results with previous study, which the NLMOs are 0.062 to 0.302 more localized to the OLMOs, with 0.179 in average.
 
 %RZK: Move to restuls. Discuss why this threshold is taken. 
-
-The determinants controlled by the penalty strength $\alpha$ and final determinant cutoff are listd in the last column of Table~\ref{tab:loc} from all systems, which also indicate the orthogonality of the obtained NLMOs.
-Even though the final determinant could go down to extremely small value (such as $10^{-7}$) in some systems, we set 0.02 a.u. as the final determinant cutoff since we suspect some generated NLMOs may become linear dependent with those extremely small determinant values.
-So we dismiss all generated NLMOs with final determinant less than 0.02 a.u. to prevent orbitals from collapsing.
-The final determinant value and further visual detection have shown that all final obtained NLMOs are linear independent between each other.
 
 The relationships between $\alpha$ and localization functional and determinant are illustrated in the Figure~\ref{fig:alpha} with the initial suggested penalty strength ($\alpha = \log^{-1} 10$) as the first point .
 The reason of using suggested $\alpha$ as starting is that we do observe the scenario described in the Theory section, which results in negligible localization functional and a trivial orbital orthogonalization problem when using extremely large penalty strength at the beginning of the optimization for some cases.
@@ -528,6 +528,10 @@ It is well known that OLMOs remain orthogonality tails whose presence is crucial
 To illustrate and compare the tail difference between OLMOs and NLMOs, we plot the NLMO and OLMO of decacyclene~(C$_{72}$H$_{24}$) with small isosurface value (0.003~a.u.).
 According to the Figure~\ref{fig:NLMOsvsOLMOs} , we can conclude that the thickness of the orthogonality tails is reduced for the localized NLMOs compared to the orthogonal counterpart.
 But the orbital locality has not changed a lot by relaxing the localization centres in molecules and periodic systmes as we initially expected.
+
+To compare the performance of the Pipek-Mezey and Boys-Foster schemes in terms of localization, we also study some of the molecules based on our newly developed NLMOs with Pipek-Mezey localization functional.
+The final obtained LMOs are no longer restricted to NLMOs by increasing the final determinant cutoff.
+
 
 In summary, we found that NLMOs are significantly more compact and less tails than corresponding OLMOs based on our newly proposed black-box method. 
 We successfully developed a new approach, which minimize the Berghold localization functional and automatically self-adjust penalty function by user specified input, to generate NLMOs without the need of understanding the bonding patterns in the system or any pre-fixed/defined NLMO centers.
