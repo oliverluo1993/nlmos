@@ -493,7 +493,7 @@ According to the Figure~\ref{fig:alpha}, we can conclude that our method success
 
 \begin{figure*}[hbpt]
 \centering
-\includegraphics[width=\textwidth]{figure_3.pdf}
+\includegraphics[scale=0.5]{figure_3.pdf}
 \caption{A plot of the OLMO and NLMO of the covalent bond of adjacent carbon atoms with different view direction  in C$_2$B$_{10}$H$_{12}$ molecule. (isosurface value eauqls to 0.04~a.u.)}
 \label{fig:boro}
 \end{figure*}
@@ -501,7 +501,7 @@ According to the Figure~\ref{fig:alpha}, we can conclude that our method success
 %RZK: remove grpahene image. Draw the periodic cell on one of the images. Same for the Zhenzhe's polymer.
 \begin{figure*}[hbpt]
 \centering
-\includegraphics[width=\textwidth]{figure_4.pdf}
+\includegraphics[scale=0.5]{figure_4.pdf}
 \caption{A plot of the OLMO and NLMO of the $\sigma$ bond~(second column) and $\pi$ bond~(third and forth column) in graphene. (isosurface value equals to  0.06~a.u.)}
 \label{fig:graphene}
 \end{figure*}
@@ -524,8 +524,8 @@ We also noticed the main lobe~(mark as red in the figure) of the NLMO is larger 
 
 \begin{figure*}[htbp]
 \centering
-\includegraphics[width=\textwidth]{figure_6.pdf}
-\caption{A plot of the OLMO and NLMO of the $\sigma$ bond~(second column) and $\pi$ bond~(third and forth column) in graphene. (isosurface value equals to  0.05~a.u.)}
+\includegraphics[scale=0.5]{figure_6.pdf}
+\caption{Comparison between generated LMOs with Boys-Foster and Pipek-Mezey localization scheme of benzene molecule and A plot of separated $\sigma$ and $\pi$ bonds of OLMOs and mixed $\tau$ and $\tau'$ bonds of NLMOs under Pipek-Mezey scheme. (isosurface value equals to  0.05~a.u.)}
 \label{fig:pipek}
 \end{figure*}
 
@@ -545,12 +545,31 @@ But the orbital locality has not changed a lot by relaxing the localization cent
 
 To compare the performance of the Pipek-Mezey and Boys-Foster schemes in terms of localization, we also study some of the molecules based on our newly developed NLMOs with Pipek-Mezey localization functional.
 The final obtained LMOs listed in the Figure~\ref{fig:pipek} are no longer restricted to NLMOs by increasing the final determinant cutoff upto 0.99.
-According to the first row in the Figure~\ref{fig:pipek}, our results maintain the $\sigma$ and $\pi$ separation in OLMOs, which are illustrated the $\pi$ bond in benzene molecule and perfectly separated $\sigma$ and $\pi$ bond of propenol molecule.
+According to the first row of Figure~\ref{fig:pipek}, our results maintain the $\sigma$ and $\pi$ separation in OLMOs, which are illustrated the $\pi$ bond in benzene molecule and perfectly separated $\sigma$ and $\pi$ bond in propenol molecule.
 With the final determinant decreasing and the LMOs becoming more and more nonorthogonal, we surprisingly noticed that the property of $\sigma$ and $\pi$ separation of Pipek-Mezey scheme is no longer satisfied.
+The NLMO of $\pi$ bond becomes more compact and tend to generate the $\tau$ bond with $\sigma$ bond in the benzene molecule.
+The first two column of Figure~\ref{fig:pipek} illustrates the comparison between Boys-Foster and Pipek-Mezey localizaiton scheme.
+Even though the failure of $\sigma$-$\pi$ separation when generating NLMOs with Pipek-Mezey scheme, we still notice the generated NLMOs with Pipek-Mezey scheme are better representative of bonding pattern and more localized compared with those with Boys-Foster scheme.
+
+\begin{equation} \label{eq:pipek-tau}
+\begin{split}
+\ket{\tau} = 2^{-1/2}\left(\ket{\sigma} + \ket{\pi}\right)\\
+\ket{\tau'} = 2^{-1/2}\left(\ket{\sigma} - \ket{\pi}\right)\\
+\Omega_L(\mathbf{\sigma}) + \Omega_L(\mathbf{\pi}) < \Omega_L(\mathbf{\tau}) + \Omega_L(\mathbf{\tau'})
+\end{split}
+\end{equation}
+
+\begin{equation} \label{eq:non-ortho-pipek}
+\begin{split}
+\ket{\tau} = cos\theta\ket{\sigma} + sin\theta\ket{\pi}\\
+\ket{\tau'} = cos\theta\ket{\sigma} - sin\theta\ket{\pi}\\
+\Omega_L(\mathbf{\sigma}) + \Omega_L(\mathbf{\pi}) \stackrel{?}{<} \Omega_L(\mathbf{\tau}) + \Omega_L(\mathbf{\tau'})
+\end{split}
+\end{equation}
+
 In the propenol molecule, the $\pi$ and $\sigma$ bonds are tend to generate the $\tau$ and $\tau'$ bonds, which is the almost same result as we obtained in the Boys-Foster scheme.
-
-
-
+In the Pipek-Mezey localization scheme, the previous study has proved that the $\sigma$-$\pi$ separtion is always the stable solution compare with the mixed $\tau$ and $\tau'$ bonds for optimum population localized orbitals in Eq.~\ref{eq:pipek-tau}. The expressions of $\ket{\tau}$ and $\ket{tau'}$ of Pipek-Mezay NLMOs scheme (Eq.~\ref{eq:non-ortho-pipek}) are different from the OLMO scheme, which results in the $\pi$ and $\sigma$ separation is no longer more stable than the mixed solution.
+So that the $\sigma$ and $\pi$ seapration is not hold in the nonorthogonal otbitals even based on Pipek-Mezey localization functional.
 
 In summary, we found that NLMOs are significantly more compact and less tails than corresponding OLMOs based on our newly proposed black-box method. 
 We successfully developed a new approach, which minimize the Berghold localization functional and automatically self-adjust penalty function by user specified input, to generate NLMOs without the need of understanding the bonding patterns in the system or any pre-fixed/defined NLMO centers.
