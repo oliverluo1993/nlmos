@@ -533,13 +533,13 @@ While the generated NLMOs are more localized and  relative reasonably representa
 But the shape of the NLMO is still more like a mixture between $\sigma$ and $\pi$ bond instead of a pure $\pi$ bond because of the limitation of the Berghold localization functional.
 The larger main lobe feature is also confirmed by the C-C $\sigma$ bond in Figure~\ref{fig:graphene}.
 
-To compare the performance of the Pipek-Mezey and Boys-Foster schemes in terms of localization, we also study some of the molecules based on our newly developed NLMOs with Pipek-Mezey localization functional.
-The final obtained LMOs listed in the Figure~\ref{fig:pipek} are no longer restricted to NLMOs by increasing the final determinant cutoff upto 0.99.
-According to the first row of Figure~\ref{fig:pipek}, our results maintain the $\sigma$ and $\pi$ separation in OLMOs, which are illustrated the $\pi$ bond in benzene molecule and perfectly separated $\sigma$ and $\pi$ bond in propenol molecule.
-With the final determinant decreasing and the LMOs becoming more and more nonorthogonal, we surprisingly noticed that the property of $\sigma$ and $\pi$ separation of Pipek-Mezey scheme is no longer satisfied.
-The NLMO of $\pi$ bond becomes more compact and tend to generate the $\tau$ bond with $\sigma$ bond in the benzene molecule.
-The first two column of Figure~\ref{fig:pipek} illustrates the comparison between Boys-Foster and Pipek-Mezey localizaiton scheme.
-Even though the failure of $\sigma$-$\pi$ separation when generating NLMOs with Pipek-Mezey scheme, we still notice the generated NLMOs with Pipek-Mezey scheme are better representative of bonding pattern and more localized compared with those with Boys-Foster scheme.
+To compare the performance of the Pipek-Mezey and Berghold schemes in terms of localization, we also study some of the molecules based on our newly developed NLMOs with Pipek-Mezey localization functional.
+The final obtained LMOs listed in the Figure~\ref{fig:pipek} are no longer restricted to NLMOs by increasing the final determinant cutoff up to 0.99 during optimization.
+According to the first row of Figure~\ref{fig:pipek}, the generated OLMOs, which which describes the $\pi$ bond in benzene molecule and perfectly separated $\sigma$ and $\pi$ bond in propenol molecule, preserve the $\sigma$ and $\pi$ separation property in OLMOs.
+With the final determinants decreasing and the LMOs becoming more and more nonorthogonal, we surprisingly noticed that the property of $\sigma$ and $\pi$ separation of Pipek-Mezey scheme is no longer satisfied.
+The NLMO described $\pi$ bond becomes more compact and tend to generate the $\tau$ bond by mixing with $\sigma$ bond in the benzene molecule.
+The first two columns of Figure~\ref{fig:pipek} illustrate the comparison between Berghold and Pipek-Mezey localizaiton scheme.
+Even though the failure of $\sigma$-$\pi$ separation when generating NLMOs based on the Pipek-Mezey scheme, we still notice that the generated NLMOs with Pipek-Mezey scheme are  more localized and have better representative of bonding pattern compared with those obtained by Berghold scheme.
 
 \begin{equation} \label{eq:pipek-tau}
 \begin{split}
@@ -557,11 +557,11 @@ Even though the failure of $\sigma$-$\pi$ separation when generating NLMOs with 
 \end{split}
 \end{equation}
 
-In the propenol molecule, the $\pi$ and $\sigma$ bonds are tend to generate the $\tau$ and $\tau'$ bonds, which is the almost same result as we obtained in the Boys-Foster scheme.
-In the Pipek-Mezey localization scheme, the previous study has proved that the $\sigma$-$\pi$ separtion is always the stable solution compare with the mixed $\tau$ and $\tau'$ bonds for optimum population localized orbitals in Eq.~\ref{eq:pipek-tau}. The expressions of $\ket{\tau}$ and $\ket{tau'}$ of Pipek-Mezay NLMOs scheme (Eq.~\ref{eq:non-ortho-pipek}) are different from the OLMO scheme, which results in the $\pi$ and $\sigma$ separation is no longer more stable than the mixed solution.
-So that the $\sigma$ and $\pi$ seapration is not hold in the nonorthogonal otbitals even based on Pipek-Mezey localization functional.
+In the propenol molecule, the $\pi$ and $\sigma$ bonds are tend to generate the $\tau$ and $\tau'$ bonds, which is the almost same result as we obtained in the Berghold scheme.
+In the Pipek-Mezey localization scheme, the previous study has proved that the $\sigma$-$\pi$ separtion is always the stable solution compare with the mixed $\tau$ and $\tau'$ bonds for optimum population localized orbitals in Eq.~\ref{eq:pipek-tau}. The expressions of $\ket{\tau}$ and $\ket{tau'}$ of Pipek-Mezay NLMOs scheme (Eq.~\ref{eq:non-ortho-pipek}) are different from the OLMO scheme, which results in the $\pi$ and $\sigma$ separation is no longer more stable solution than the mixed case.
+So that the $\sigma$ and $\pi$ seapration can not be maintained in the nonorthogonal otbitals even based on Pipek-Mezey localization functional.
 
-It is well known that OLMOs remain orthogonality tails whose presence is crucial to satisfy the orthogonal condition for OLMOs , while NLMOs which remove the orthogonalization constrain tend to get smaller tails and more compact orbitals. 
+It is well known that OLMOs remain orthogonality tails whose presence is crucial to satisfy the orthogonal condition for OLMOs , while NLMOs, which remove the orthogonalization constrain, tend to get smaller tails and more compact orbitals. 
 To illustrate and compare the tail difference between OLMOs and NLMOs, we plot the NLMO and OLMO of decacyclene~(C$_{72}$H$_{24}$) with small isosurface value (0.003~a.u.).
 According to the Figure~\ref{fig:NLMOsvsOLMOs} , we can conclude that the thickness of the orthogonality tails is reduced for the localized NLMOs compared to the orthogonal counterpart.
 But the orbital locality has not changed a lot by relaxing the localization centres in molecules and periodic systmes as we initially expected.
@@ -573,10 +573,10 @@ But the orbital locality has not changed a lot by relaxing the localization cent
 \end{figure}
 
 In summary, we found that NLMOs are significantly more compact and less tails than corresponding OLMOs based on our newly proposed black-box method. 
-We successfully developed a new approach, which minimize the Berghold localization functional and automatically self-adjust penalty function by user specified input, to generate NLMOs without the need of understanding the bonding patterns in the system or any pre-fixed/defined NLMO centers.
-But we also encountered several problems  in our method.
-We observed the convergence rate issue in some systems due to we only use the gradient instead of Hessian as the new line search direction.
-Also, as we mentioned before, the Boys localization functional tends to mix the $\sigma$ and $\pi$ bond during the minimization procedure, so the $\pi$ bond of NLMOs we obtained are slightly different from the traditional bonding pattern.
+We successfully developed a new approach, which minimizes the Berghold or Pipek-Mezey localization functional and automatically self-adjusts penalty function by user specified input, to generate LMOs, especially NLMOs without the need of understanding the bonding patterns in the system or any pre-fixed/defined NLMO centers.
+Our results are consistent with the previous study which the NLMOs are around $10\%$ to $30\%$ more localized than the corresponding OLMOs.
+As we mentioned before, the Berghold localization functional tends to mox the $\sigma$ and $\pi$ bond during the minimization procedure, so the $\pi$ bond of NLMOs we obtained are slightly different from the traditional bonding pattern.
+Further more, we surprisingly noticed that the $\sigma$-$\pi$ separation could not be preserved when generating NLMOs based on Pipek-Mezey localization scheme.
 %This problem is possible to be solved if we use Pipek-Mezey~\cite{pipek1989a_fast} localization scheme.
 Even though obtained NLMOs with our method have less orthogonality tails compared with conventional OLMOs, we still could observe the significantly existence of tails when using small isosurface value, which means the generated NLMOs are still not nonorthogonal enough to eliminate the tails when using second order localization functional. 
 We hope this issue can be solved when applying higher order localization functional.
@@ -595,7 +595,7 @@ We hope this issue can be solved when applying higher order localization functio
 \section{Conclusions}
 %RZZK: the algorithm is easy to implement to obtain both OLMOs and NLOMs. In the former case, it does not require to parameterize the unitary transformation.
 %RZZK: it is a generalization of the proposed schemes to generate MLWFs. Important for solid state systems.
-In this paper, we proposed an unconstrained black-box method to localize nonorthogonal orbitals that automatically determine the NLMOs' centers during the optimization process without any pre-understanding/defined bonding patterns in the system. 
+In this paper, we proposed an unconstrained and generalized black-box method to localize orbitals, especially NLMOs, that automatically determine the centers during the optimization process without any pre-understanding/defined bonding patterns in the system. 
 The adjustable penalty function strength allows us to manually regulate the balance between orthogonality and locality of NLMOs.
 Our calculations show that the optimization is stable and fast in our most tested systems.
 With the help of the penalty function, we did not observe linear dependence issue among generated NLMOs.
