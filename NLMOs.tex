@@ -198,7 +198,7 @@ B^{K}_{mn} &= \bra{m_0} \E^{\imi \mathbf{G}_K \cdot \mathbf{\op{r}}} \ket{n_0}
 \end{split}
 \end{equation}
 %
-where $\mathbf{\op{r}}$ is the position operator in three dimensions, $\omega_K$ and $\mathbf{G}_K$ are a suitable set of weights and reciprocal lattice vectors, respectively, labeled by index $K$~\cite{silvestrelli1999maximally, berghold2000general}. We chose to write the summation over $K$ explicitly because $K$ is not an orbital index. The functional in Eq.~(\ref{eq:fun-loc}) can be used for both gas-phase and periodic systems~\cite{berghold2000general}. In the former case, the functional is equivalent to the Boys-Foster localization~\cite{berghold2000general, resta1999electron}. In the latter case, its applicability is limited to the electronic states described within the $\Gamma$-point approximation.
+where $\mathbf{\op{r}}$ is the position operator in three dimensions, $\omega_K$ and $\mathbf{G}_K$ are suitable sets of weights and reciprocal lattice vectors, respectively, labeled by index $K$~\cite{silvestrelli1999maximally, berghold2000general}. We chose to write the summation over $K$ explicitly because $K$ is not an orbital index. The functional in Eq.~(\ref{eq:fun-loc}) can be used for both gas-phase and periodic systems~\cite{berghold2000general}. In the former case, the functional is equivalent to the Boys-Foster localization~\cite{berghold2000general, resta1999electron}. In the latter case, its applicability is limited to the electronic states described within the $\Gamma$-point approximation.
 
 We also considered the Pipek-Mezey localization functional~\cite{pipek1989fast,lehtola2014pipek} that has the advantage of preserving the separation of $\sigma$ and $\pi$ bonds and is commonly employed for molecular system
 %RZK citation lehtola2014pipek: dx.doi.org/10.1021/ct401016x
@@ -300,8 +300,6 @@ The procedure for tuning $c_P$ is shown as the outer loop of the algorithm in Fi
 
 %RZZK: Dmin is a misnomer.
 
-%RZZK: Describe the procedure for quick and reliable determinant evaluation
-
 \begin{figure}
 \begin{algorithm}[H]
   \caption{Conjugate gradient minimization of $\Omega$}
@@ -385,9 +383,13 @@ The procedure for tuning $c_P$ is shown as the outer loop of the algorithm in Fi
 \caption{\label{fig:cg} Algorithm for the optimization of NLMOs.}
 \end{figure}
 
-\section{Computational details}
+\section{Implementation and computational details}
 
-The localization procedure is implemented in the CP2K software package~\cite{cp2kgeneral}. 
+The localization procedure is implemented in the CP2K software package~\cite{cp2kgeneral}. The DBCSR library~\cite{borstnik2014sparse} that handles sparse matrices efficiently on massively-parallel computing platforms is utilized to enable orbital localization in large systems.
+%borstnik2014sparse - https://doi.org/10.1016/j.parco.2014.03.012
+
+%RZZK: Describe our recursive procedure for quick and reliable linear-scaling determinant evaluation.
+
 We constructed NLMOs for several systems ranging from a simple water molecule to complex molecules with non-trivial bonding patterns to large periodic systems. 
 CMOs were obtained for all systems using the conventional SCF procedure in the DFT module of CP2K and then used as the initial states in the localization procedure. 
 The Becke-Lee-Yang-Parr generalized gradient approximation~\cite{becke1988density, lee1988development} was used as the exchange-correlation functional.
@@ -477,9 +479,10 @@ Even though the final determinant could go down to extremely small value (such a
 So we dismiss all generated NLMOs with final determinant less than 0.02 a.u. to prevent orbitals from collapsing.
 The final determinant value and further visual detection have shown that all final obtained NLMOs are linear independent between each other.
 
+% RZK: are we using the same value 
 The relationships between $\alpha$ and localization functional and determinant are illustrated in the Figure~\ref{fig:alpha} with the initial suggested penalty strength ($\alpha = \log^{-1} 10$) as the first point .
 The reason of using suggested $\alpha$ as starting is that we do observe the scenario described in the Theory section, which results in negligible localization functional and a trivial orbital orthogonalization problem when using extremely large penalty strength at the beginning of the optimization for some cases.
-The first vertical axis and the red line describe the change of localization functional with different penalty strength during the minimization procedure, with the secondary axis and the blue line report the variation of determinants。
+The first vertical axis and the red line describe the change of localization functional with different penalty strength during the minimization procedure, with the secondary axis and the blue line report the variation of determinants. 
 The trend of the localization functional and determinant versus penalty strength change in the same way as we expected.
 For most of the systems such as propene, graphene and benzene, the suggested $\alpha$ directly help users to eliminate the  negligible localization functional problem even in the first several steps.  
 But we still got a typical dependency results in the Heptane system, which we observe both localization functional and determinants remain the same for the fist and last several points and relative faster change in the middle points.
