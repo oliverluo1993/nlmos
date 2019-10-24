@@ -287,7 +287,7 @@ B^{K}_{mn} &= \bra{m_0} \E^{\imi \mathbf{G}_K \cdot \mathbf{\op{r}}} \ket{n_0}
 \end{split}
 \end{equation}
 %
-where $\mathbf{\op{r}}$ is the position operator in three dimensions, $\omega_K$ and $\mathbf{G}_K$ are a suitable set of weights and reciprocal lattice vectors, respectively, labeled by index $K$~\cite{silvestrelli1999maximally, berghold2000general}. We chose to write the summation over $K$ explicitly because $K$ is not an orbital index. The functional in Eq.~(\ref{eq:fun-loc}) can be used for both gas-phase and periodic systems~\cite{berghold2000general}. In the former case, the functional is equivalent to the Boys-Foster localization~\cite{berghold2000general, resta1999electron}. In the latter case, its applicability is limited to the electronic states described within the $\Gamma$-point approximation.
+where $\mathbf{\op{r}}$ is the position operator in three dimensions, $\omega_K$ and $\mathbf{G}_K$ are suitable sets of weights and reciprocal lattice vectors, respectively, labeled by index $K$~\cite{silvestrelli1999maximally, berghold2000general}. We chose to write the summation over $K$ explicitly because $K$ is not an orbital index. The functional in Eq.~(\ref{eq:fun-loc}) can be used for both gas-phase and periodic systems~\cite{berghold2000general}. In the former case, the functional is equivalent to the Boys-Foster localization~\cite{berghold2000general, resta1999electron}. In the latter case, its applicability is limited to the electronic states described within the $\Gamma$-point approximation.
 
 We also considered the Pipek-Mezey localization functional~\cite{pipek1989fast,lehtola2014pipek} that has the advantage of preserving the separation of $\sigma$ and $\pi$ bonds and is commonly employed for molecular system
 %RZK citation lehtola2014pipek: dx.doi.org/10.1021/ct401016x
@@ -389,11 +389,96 @@ The procedure for tuning $c_P$ is shown as the outer loop of the algorithm in Fi
 
 %RZZK: Dmin is a misnomer.
 
-%RZZK: Describe the procedure for quick and reliable determinant evaluation
+\begin{figure}
+\begin{algorithm}[H]
+  \caption{Conjugate gradient minimization of $\Omega$}
+  \label{alg:cg}
+   \begin{algorithmic}[1]
+   	%\Procedure{Minimize$\Omega$}{$c_P, \tau, \mathbf{T}_0$}
+	\State Input $\epsilon_{\text{CG}}$ \Comment{Localization convergence threshold}
+	%\State Input $N_{\text{CG}}$, $N_{\text{Outer}}$ \Comment{Max CG, outer iterations}
+	\State Input $\text{D}_{\text{min}}$ \Comment{Minimum allowed NLMO determinant}
+   	\State Input $\mathbf{T}_0$ \Comment{Initial basis set coefficients for $\ket{i_0}$}
+   	\State Input $\mathbf{S}$ \Comment{Basis set overlap}
+   	\State Input $\mathbf{L}^K$ \Comment{Basis set representation of the localization operator} 
+   	\State $\mathbf{\sigma}_0 \gets \mathbf{T}_0^{\dagger} \mathbf{ST}_0$ \Comment{Initial orbital overlap} 
+   	\State $\mathbf{B}^{K} \gets \mathbf{T}_0^{\dagger} \mathbf{L}^K \mathbf{T}_0$ \Comment{Initial localization matrix, Eq.~(\ref{eq:fun-loc})} 
+	\State $\mathbf{a} \gets \mathbf{I}$ \Comment{Initial guess on variational parameters}
+	%\State Converged $\gets$ False
+	\State StopOuter $\gets$ False \Comment{Flag to exit the outer loop}
+	\State $i_{\text{Outer}} \gets 0$ \Comment{Iteration counter}
+	\Repeat \Comment{Loop to change the penalty strength}
+		\State $i_{\text{Outer}} \gets i_{\text{Outer}} + 1$ 
+		\State StopCG $\gets$ False \Comment{Flag to exit the CG loop}
+		\State $i_{\text{CG}} \gets 0$ \Comment{Iteration counter}
+%		\State $\beta \gets 0$ \Comment{Reset conjugation}
+		\Repeat \Comment{Fixed-penalty localization loop}
+			\State $i_{\text{CG}} \gets i_{\text{CG}} + 1$ 
+			\State $\mathbf{A} \gets \mathbf{a} \left[ \text{diagonal}(\mathbf{a}^{\dagger} \mathbf{\sigma}_0 \mathbf{a}) \right]^{-\frac{1}{2}}$ \Comment{Update NLMOs}
+			\State $\mathbf{\sigma} \gets \mathbf{A}^{\dagger}\mathbf{\sigma}_0 \mathbf{A}$ \Comment{Update overlap}
+			\State $\text{Det} \gets \text{determinant} (\mathbf{\sigma})$ \Comment{Determinant}
+			\State $\Omega_{P} \gets - \log [\text{Det}] $ \Comment{Orthogonalization functional}
+			\State $\mathbf{P} \gets \text{Eq~(\ref{eq:grad-pen}) and~(\ref{eq:grad-convert})}$ \Comment{Orthogonalization gradient}
+			\State $\Omega_{L} \gets \text{Eq~(\ref{eq:fun-loc})}$ \Comment{Localization functional}
+			\State $\mathbf{L} \gets \text{Eq~(\ref{eq:grad-loc}) and~(\ref{eq:grad-convert})}$ \Comment{Localization gradient}
+			\If{$i_{\text{Outer}}=1$ \textbf{and} $i_{\text{CG}}=1$} 
+				%\State $c_{P} \gets \text{Tr}(\mathbf{L}^{\dagger} \mathbf{P})/\text{Tr}(\mathbf{P}^{\dagger}\mathbf{P})$
+				\State $c_{P} \gets \Omega_{L}(\log [\text{Det} / \text{D}_{\text{min}} ])^{-1}$ \Comment{Initial strength}
+			\EndIf
+			\State $\Omega \gets \Omega_{L} + c_P \Omega_{P} $ 
+			\If{$i_{\text{CG}}>1$}
+				\State $\mathbf{\Gamma} \gets \mathbf{G}$ \Comment{Save old gradient}
+			\EndIf 
+			\State $\mathbf{G} \gets \mathbf{L} + c_P \mathbf{P} $ 
+			%\State $\text{Error}_\text{CG} \gets \vert\vert \mathbf{G} \vert \vert_{\text{max}}$
+			\If{$\vert\vert \mathbf{G} \vert \vert_{\text{max}} < \epsilon_{\text{CG}}$}
+				\State StopCG $\gets$ True
+			\EndIf
+%			\If{$i_{\text{CG}}=1$ \textbf{And} $i_{\text{Outer}}=1$}
+%				\State StopCG $\gets$ False \Comment{Do first iteration}
+%			\EndIf
+			\If{\textbf{not} StopCG}
+%				\If{$i_{\text{CG}} = 1$}
+%					\State $\mathbf{P}^{R_c} \gets \text{Eq.\ref{eq:prec}}(\mathbf{F},\mathbf{M}^{R_c},\mathbf{K}^{R_c}) $\Comment{Precon.}
+%				\Else
+%					\State $\mathbf{O}_{R_c} \gets \mathbf{D}_{R_c}$ \Comment{Save old direction}
+%				\EndIf
+				\If{$i_{\text{CG}} > 1$}
+					\State $\mathbf{O} \gets \mathbf{D}$ \Comment{Save old direction}
+				\EndIf
+%				\State $\mathbf{D}_{R_c} \gets - [(\mathbf{P}^{R_c})^{-1} \mathbf{G}^{R_c}]_{R_c}$ \Comment{Precon. grad.}
+				\State $\mathbf{D} \gets - \mathbf{G}$ \Comment{Initial direction}
+				\If{$i_{\text{CG}}>1$}
+					\State $\beta \gets \text{Tr}(\mathbf{G}^{\dagger} \mathbf{D})/\text{Tr}(\mathbf{\Gamma}^{\dagger}\mathbf{O})$
+					\State $\mathbf{D} \gets \mathbf{D} + \beta \mathbf{O}$ \Comment{Search direction}
+				\EndIf 
+				\State $\alpha \gets \text{argmin}_{\alpha} \Omega(\mathbf{a} + \alpha \mathbf{D})$ \Comment{Line search}
+				\State $\mathbf{a}\gets \mathbf{a} + \alpha \mathbf{D}$ \Comment{Update variational DOFs}
+			\EndIf
+		\Until{StopCG} 
+%RZK: add an additional criterion that prevents high-determinant cases go on forever
+		%\If{$\text{Det} < \text{Det}_{\text{Target}}$ \textbf{or} $i_{\text{Outer}} > N_{\text{Outer}}$}
+		\If{$\text{Det} < \text{D}_{\text{min}}$}
+			\State StopOuter $\gets$ True
+		\EndIf
+		\If{$i_{\text{Outer}}>1$} 
+			\State $c_{P} \gets c_P / 2$ \Comment{Reduce $c_P$}
+		\EndIf
+	\Until{StopOuter}
+	\State $\mathbf{return}$ $\mathbf{T} \gets \mathbf{T}_0 \mathbf{A} $ \Comment{Return NLMOs coefficients}
+	%\EndProcedure
+   \end{algorithmic}
+\end{algorithm}
+\caption{\label{fig:cg} Algorithm for the optimization of NLMOs.}
+\end{figure}
 
-\section{Computational details}
+\section{Implementation and computational details}
 
-The localization procedure is implemented in the CP2K software package~\cite{cp2kgeneral}. 
+The localization procedure is implemented in the CP2K software package~\cite{cp2kgeneral}. The DBCSR library~\cite{borstnik2014sparse} that handles sparse matrices efficiently on massively-parallel computing platforms is utilized to enable orbital localization in large systems.
+%borstnik2014sparse - https://doi.org/10.1016/j.parco.2014.03.012
+
+%RZZK: Describe our recursive procedure for quick and reliable linear-scaling determinant evaluation.
+
 We constructed NLMOs for several systems ranging from a simple water molecule to complex molecules with non-trivial bonding patterns to large periodic systems. 
 CMOs were obtained for all systems using the conventional SCF procedure in the DFT module of CP2K and then used as the initial states in the localization procedure. 
 The Becke-Lee-Yang-Parr generalized gradient approximation~\cite{becke1988density, lee1988development} was used as the exchange-correlation functional.
@@ -483,9 +568,16 @@ Comparison between the NLMOs and OLMOs based on our algorithms gives similar res
 
 %RZK: Move to restuls. Discuss why this threshold is taken. 
 
+The determinants controlled by the penalty strength $\alpha$ and final determinant cutoff are listd in the last column of Table~\ref{tab:loc} from all systems, which also indicate the orthogonality of the obtained NLMOs.
+Even though the final determinant could go down to extremely small value (such as $10^{-7}$) in some systems, we set 0.02 a.u. as the final determinant cutoff since we suspect some generated NLMOs may become linear dependent with those extremely small determinant values.
+So we dismiss all generated NLMOs with final determinant less than 0.02 a.u. to prevent orbitals from collapsing.
+The final determinant value and further visual detection have shown that all final obtained NLMOs are linear independent between each other.
+
 The relationships between $\alpha$ and localization functional and determinant are illustrated in the Figure~\ref{fig:alpha} with the initial suggested penalty strength ($\alpha = \log^{-1} 10$) as the initial point.
-The reason of using suggested $\alpha$ as starting point is that we do observe the scenario described in the Theory section, which results in the case that the negligible localization functional and a trivial orbital orthogonalization problem may be encountered when using extremely large penalty strength at the beginning of the optimization.
+%The reason of using suggested $\alpha$ as starting point is that we do observe the scenario described in the Theory section, which results in the case that the negligible localization functional and a trivial orbital orthogonalization problem may be encountered when using extremely large penalty strength at the beginning of the optimization.
+The reason of using suggested $\alpha$ as starting point is that we do observe the scenario described in the Theory section, which results in negligible localization functional and a trivial orbital orthogonalization problem when using extremely large penalty strength at the beginning of the optimization for some cases.
 The first vertical axis and the red line describe the change of localization functional with different penalty strength during the minimization procedure, with the secondary axis and the blue line report the variation of determinants.
+
 The trend of the localization functional and determinant versus penalty strength change in the same way as we expected.
 For most of the systems such as propene, graphene and benzene, the suggested $\alpha$ directly helps users to eliminate the  negligible localization functional problem even in the first several steps.  
 But we still got a typical dependency results in the Heptane system, which we observe both localization functional and determinants remain the same for the first and last several points and change relatively faster in the middle points.
