@@ -39,16 +39,14 @@ Direct unconstrained variable-metric localization of one-electron orbitals
 \date{\today}
 
 \begin{abstract}
-Spatially localized one-electron orbitals, orthogonal and nonorthogonal, are widely used in electronic structure theory to describe chemical bonding and speed up calculations.
-%* In order to generate localized orbitals while avoiding linear dependence between them, all existing methods impose either unitary or fixed-center constraints on orbital transformations during the localization procedure. 
-In order to avoid linear dependence between localized orbitals, the existing localization methods either constrain orbital transformations to be unitary and therefore metric preserving or, in case of variable metric methods, fix the centers of nonorthogonal localized orbitals. 
-Here, we developed a conceptually different orbital localization method, in which these constraints are replaced with a single restriction that specifies the maximum allowed deviation from the orthogonality for the final set of localized orbitals. 
-This reformulation of orbital localization enables one to choose the desired balance between the orthogonality and locality of the orbitals. 
-Furthermore, the method is advantageous because it optimizes orbital mixing coefficients directly, obviating parameterization of unitary transformations and simplifying optimization algorithms. 
-For nonorthogonal orbitals, the new approach allows to determine optimal positions of their centers automatically in an unconstrained and straightforward optimization procedure, without \emph{a priori} knowledge of bonding patterns in the system. 
-The proposed localization method is demonstrated to work for a variety of molecules and periodic materials including large systems with non-trivial bonding. 
+Spatially localized one-electron orbitals, orthogonal and nonorthogonal, are widely used in electronic structure theory to describe chemical bonding and speed up calculations. 
+In order to avoid linear dependencies of localized orbitals, the existing localization methods either constrain orbital transformations to be unitary, that is, metric preserving, or, in the case of variable-metric methods, fix the centers of nonorthogonal localized orbitals. 
+Here, we developed a different approach to orbital localization, in which these constraints are replaced with a single restriction that specifies the maximum allowed deviation from the orthogonality for the final set of localized orbitals. 
+This reformulation, which can be viewed as a generalization of existing methods, enables one to choose the desired balance between the orthogonality and locality of the orbitals. 
+Furthermore, the approach is conceptually and practically simple as it obviates the necessity in unitary transformations and allows to determine optimal positions of the centers of nonorthogonal orbitals in a unconstrained and straightforward minimization procedure. 
+It is demonstrated to produce well-localized orthogonal and nonorthogonal orbitals with the Berghold and Pipek-Mezey localization functions for a variety of molecules and periodic materials including large systems with non-trivial bonding. 
 \end{abstract}
-
+%+general, +flexible, +conceptually simple, +easy to implement, +no unitary parameterization, +no fixed centers
 
 %Keywords: nonorthogonal maximally localized Wannier functions, localized molecular oribtals, Pipek-Mezey, Foster-Boys, sigma-pi mixing, orthogonality defect
 
@@ -56,7 +54,7 @@ The proposed localization method is demonstrated to work for a variety of molecu
 
 \section{Introduction} 
 
-Spatially localized orbitals are of paramount importance in one-electron theories such as the Hartree-Fock (HF) method and Kohn-Sham density functional theory (DFT) as well as in post-HF wavefunction-based electron correlation methods.
+Spatially localized orbitals are of paramount importance in one-electron theories such as the Hartree-Fock method and Kohn-Sham density functional theory as well as in post-Hartree-Fock wavefunction-based electron correlation methods.
 Localized orbitals are widely used to describe and visualize chemical bonding between atoms thus helping classify bonds and understand electronic-structure origins of observed properties of atomistic systems. 
 Furthermore, localized orbitals are the key ingredient in multiple local electronic structure methods~\cite{goedecker1994efficient, bowler2012methods, zalesny2011linear, pulay1986orbital, saebo2001low, pisani2005local, hampel1996local, forner1997numerical} that dramatically reduce the computational cost of modeling electronic properties of large systems~\cite{saebo1993local, schutz1999low, hetzer2000low, schutz2001low}.
 Spatially localized orbitals are known as localized molecular orbitals (LMOs) in the field of molecular quantum chemistry and maximally localized Wannier functions (MLWFs) in solid state physics and materials science~\cite{marzari2012maximally}. 
@@ -87,10 +85,10 @@ While this method solves severe linear dependence issues, it requires either the
 
 In this work, we propose a variable-metric method to simplify the construction and improve locality of orthogonal and nonorthogonal LMOs. 
 The key new component of the method is a simple penalty function that prevents LMOs from becoming linear dependent and allows to choose the desirable balance between the nonorthogonality and locality of LMOs. 
-The penalty function replaces all constraints that are normally imposed on localized orbitals with a single restriction that specifies the allowed deviation from the orthogonality for final localized orbitals. 
-For \mbox{OLMOs}, the method is advantageous because it optimizes orbital mixing coefficients directly, obviating complicated parameterization of unitary transformations and simplifying optimization algorithms.  
+The penalty function replaces all constraints that are normally imposed on localized orbitals with a single restriction that specifies the allowed deviation from the orthogonality for the final localized orbitals. 
+For \mbox{OLMOs}, the method is advantageous because it optimizes orbital mixing coefficients directly, obviating complicated parameterization of unitary transformations and simplifying orbital optimization algorithms.  
 For \mbox{NLMOs}, the new approach allows to determine the optimal positions of their centers automatically in an unconstrained and straightforward optimization procedure, without \emph{a priori} knowledge of bonding patterns in the system.
-The proposed localization method is demonstrated to work well for a variety of molecules and materials including large systems with non-trivial bonding. 
+%The proposed localization method is demonstrated to work well for a variety of molecules and materials including large systems with non-trivial bonding. 
 
 
 \section{Methodology}
@@ -376,7 +374,7 @@ The localization procedure was implemented in the CP2K software package~\cite{cp
 
 To test the localization procedure, we constructed NLMOs for several systems ranging from a simple water molecule to complex molecules with non-trivial bonding patterns and to large periodic systems. 
 %
-For all systems, the initial CMOs were obtained using the conventional diagonalization-based SCF procedure implemented in the DFT module of CP2K. 
+For all systems, the initial CMOs were obtained using the conventional diagonalization-based SCF procedure implemented in the electronic structure module of CP2K. 
 The Becke-Lee-Yang-Parr generalized gradient approximation~\cite{becke1988density, lee1988development} was used as the exchange-correlation functional.
 Goedecker-Teter-Hutter pseudopotentials~\cite{goedecker1996separable} were used together with a triple-$\zeta$ atom-centered Gaussian basis set with two sets of polarization functions for all atoms. 
 The energy cutoff was set at 600 Ry to define the auxiliary plane-wave basis set in the construction of the effective Hamiltonian. 
@@ -396,7 +394,7 @@ The integration over the Brillouin zone was performed using the $\Gamma$-point a
 
 For all test systems, the conjugate gradient localization procedure in Figure~\ref{alg:cg} is stable and efficient. The numerical precision of the implemented code allows to treat NLMOs with $\det(\sigma)$ as lows as $10^{-8}$ as linearly independent. However, a visual inspection of NLMOs with such a tiny overlap determinant reveals that orbitals can become almost identical (for example, localized on the same bonds) with only minor physically irrelevant differences. At the same time, NLMOs with $\det(\sigma) > 10^{-1}$ are found to highlight bonding patterns in all test systems correctly. Therefore, we set the minimum allowed NLMO determinant $\text{D}_{\text{tar}}$ to $10^{-1}$ in all tests. The initial value of $\alpha=\log^{-1} 10$ was set according to Eq.~(\ref{eq:cp-alpha}). The value of $\alpha$ was decreased by a factor of 2.0 in the outer loop of the algorithm (Figure~\ref{alg:cg}) until the overlap determinant fell below $\text{D}_{\text{tar}}$ or until the optimal $\Omega_{L}$ stopped changing with $c_P$ appreciably (see water, diborane, heptane examples in Figure~\ref{fig:alpha}).
 
-Since the determinant of the overlap is proportional to the square of the volume of the multidimensional parallelepiped spanned by the NLMO vectors then $\text{D}_{\text{tar}}=10^{-1}$ corresponds to the volume of $\det(\mathbf{A})\approx 0.32$, which is large enough to produce distinct NLMOs.
+Since the determinant of the overlap is proportional to the square of the volume of the parallelepiped spanned by the NLMO vectors, $\text{D}_{\text{tar}}=10^{-1}$ corresponds to the volume of $\det(\mathbf{A})\approx 0.32$, which is large enough to produce distinct NLMOs.
 
 Figure~\ref{fig:alpha} demonstrates how the penalty strength affects the optimal orbital localization and the determinant of the orbital overlap. In all tests, the initial penalty strength is sufficiently large to produce almost perfectly orthogonal localized orbitals. At the same time it is not too large to yield more localized linearly independent nonorthogonal localized orbitals after just several steps of $c_P$ adjustment. %Figure~\ref{fig:alpha} shows that $c_P$ can be adjusted with a black-box algorithms to generate linearly independent NLMOs.
 
