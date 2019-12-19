@@ -42,7 +42,7 @@ Direct unconstrained variable-metric localization of one-electron orbitals
 Spatially localized one-electron orbitals, orthogonal and nonorthogonal, are widely used in electronic structure theory to describe chemical bonding and speed up calculations. 
 In order to avoid linear dependencies of localized orbitals, the existing localization methods either constrain orbital transformations to be unitary, that is, metric preserving, or, in the case of variable-metric methods, fix the centers of nonorthogonal localized orbitals. 
 Here, we developed a different approach to orbital localization, in which these constraints are replaced with a single restriction that specifies the maximum allowed deviation from the orthogonality for the final set of localized orbitals. 
-This reformulation, which can be viewed as a generalization of existing methods, enables one to choose the desired balance between the orthogonality and locality of the orbitals. 
+This reformulation, which can be viewed as a generalization of existing localization methods, enables one to choose the desired balance between the orthogonality and locality of the orbitals. 
 Furthermore, the approach is conceptually and practically simple as it obviates the necessity in unitary transformations and allows to determine optimal positions of the centers of nonorthogonal orbitals in a unconstrained and straightforward minimization procedure. 
 It is demonstrated to produce well-localized orthogonal and nonorthogonal orbitals with the Berghold and Pipek-Mezey localization functions for a variety of molecules and periodic materials including large systems with non-trivial bonding. 
 \end{abstract}
@@ -525,7 +525,7 @@ This simple example shows that $\sigma$-$\pi$ separation should not be expected 
 
 In this work, we proposed a new approach to construct localized orthogonal and nonorthogonal one-electron orbitals. 
 %The approach improves orbital locality by eliminating the constraints typically imposed on orthogonal and nonorthogonal orbitals in the localization process. 
-Unlike existing localization methods, this approach prevents the catastrophic linear dependence of the orbitals by augmenting the localization function with a simple single-value penalty that measures the degree of orbital nonorthogonality and thus allows to avoid nearly-dependent states in the localization procedure.
+In this approach, the catastrophic linear dependence of the orbitals is prevented by augmenting the localization function with a simple single-value penalty that measures the degree of orbital nonorthogonality and thus allows to avoid nearly-dependent states in the localization procedure.
 %
 The proposed penalty function enables a more flexible approach to orbital localization as it allows to replace traditional metric-preserving unitary transformations of the orbitals with more general variable-metric nonsingular transformations. The approach is also conceptually simpler because a complicated parameterization of unitary transformations~\cite{hoyvik2017generalising} is obviated, even in the case of OLMOs, allowing to optimize orbital mixing coefficients directly using simple unconstrained minimization algorithms. 
 
