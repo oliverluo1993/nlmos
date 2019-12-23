@@ -24,7 +24,7 @@
 
 \begin{document}
 
-\bibliographystyle{apsrev}
+\bibliographystyle{abbrv}
 
 \title{
 Direct unconstrained variable-metric localization of one-electron orbitals
@@ -367,7 +367,7 @@ The logarithm of the determinant of the symmetric positive definite overlap matr
 %
 where $\mathbf{s}=\left[\text{diag}(\sigma)\right]^{1/2}$. The series converges only if $\|\mathbf{X}\|_F < 1$. If it is not the case, the square root of $\mathbf{I}+\mathbf{X}$ is computed recursively until the norm requirement is satisfied. The advantage of this algorithm is that relies exclusively on matrix-matrix multiplication and can be readily implemented in any matrix library. Its computational cost grows cubically with the number of orbitals for dense matrices and linearly for sparse overlap matrices of localized orbitals.
 
-The localization procedure was implemented in the CP2K software package~\cite{cp2kgeneral}. The DBCSR library~\cite{borstnik2014sparse} that handles sparse matrices efficiently on massively-parallel computing platforms is utilized to enable orbital localization in large systems.
+The localization procedure was implemented in the CP2K software package~\cite{cp2kgeneral}. The DBCSR library~\cite{borvstnik2014sparse} that handles sparse matrices efficiently on massively-parallel computing platforms is utilized to enable orbital localization in large systems.
 %RZK: borstnik2014sparse - https://doi.org/10.1016/j.parco.2014.03.012
 
 \subsection{Computational details}
@@ -465,7 +465,7 @@ The reduced tails of NLMOs are also visible in Figure~\ref{fig:decacyclene}, whi
 
 \begin{figure}[hbpt]
 \centering
-\includegraphics[scale=0.7]{graphene.pdf}
+\includegraphics[scale=0.6]{graphene.pdf}
 \caption{Representative OLMOs (top) and NLMOs (bottom) of graphene. The isosurface value is 0.06~a.u.
 }
 \label{fig:graphene}
@@ -489,7 +489,7 @@ However, as the determinant of the NLMO overlap decreases the $\sigma$-$\pi$ sep
 \begin{figure}[hbpt]
 \centering
 \includegraphics[scale=0.35]{sigma_pi_mixing.pdf}
-\caption{A. The $\sigma$ and $\pi$ separation and mixed orbitals for a toy system of two atoms (A and B), each with a $p_x$ and $p_z$ atomic orbitals. B. The contour of the localization function with different value of $\Theta$ and $\Phi$. Red line: $\det(\sigma) = 1$; Orange line: $\det(\sigma) = 10^{-1}$.}
+\caption{A. The $\sigma$ and $\pi$ separation and mixed orbitals for a toy system of two atoms (A and B), each with a $p_x$ and $p_z$ atomic orbitals. B. The contour of the localization function with different value of $\Theta$ and $\Phi$. Red line: $\det(\sigma) = 1$; Yellow line: $\det(\sigma) = 10^{-1}$.}
 %RZK: all text in (A) must be of the same size; Tau' orbital must have the overlap below the iteratomic axis and the central lobes should be black. In Tau orbital the center lobes (above the line) should be white. Change the orange line to blue.
 \label{fig:sigma_pi_mixing}
 \end{figure}
@@ -516,7 +516,7 @@ Mixing the occupied $\sigma$ and $\pi$ orbitals produces $\tau$ and $\tau'$ orbi
 %
 In the general case of NLMOs, there are two mixing angles $\Theta$ and $\Phi$ that can be varied independently to minimize $\Omega^{\text{PM}}_L$. OLMOs are recovered when $\Theta = \Phi$. 
 Figure~\ref{fig:sigma_pi_mixing}B shows the dependence of the Pipek-Mezey localization function on $\Theta$ and $\Phi$. 
-The red diagonal line corresponds to all possible OLMOs. The blue line describes the NLMOs with $\det(\sigma) = 10^{-1}$. 
+The red diagonal line corresponds to all possible OLMOs. The yellow line describes the NLMOs with $\det(\sigma) = 10^{-1}$. 
 As shown in the work of Pipek and Mezey~\cite{pipek1989fast}, the $\sigma$ and $\pi$ orbitals ($\Theta=\Phi=0$) minimize the localization function along the diagonal line. 
 But as the orbitals allowed to be less orthogonal, the most localized solution $\Theta+\Phi=\pi/2$ corresponds to $\tau$ and $\tau'$. 
 This simple example shows that $\sigma$-$\pi$ separation should not be expected for NLMOs constructed with the Pipek-Mezey method.
@@ -546,7 +546,7 @@ The research was funded by the Natural Sciences and Engineering Research Council
 Grant (RGPIN-2016-0505) and by Tri-agency Institutional Programs Secretariat through New Frontiers in Research Fund (NFRFE-2018-00852). The authors are grateful to Compute Canada for computer time.
 
 %RZK: the Latex document should compile without warnings. Check that all references contain unambiguous bibliographic information (issues, pages or article numbers). All references must be formatted according to JCTC guidlines.
-\bibliographystyle{apsrev4-1}
+%\bibliographystyle{abbrv}
 \bibliography{NLMOs}
 
 \end{document}
