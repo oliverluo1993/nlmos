@@ -4,6 +4,8 @@
 %\usepackage{algorithmic}
 \usepackage{algorithm}
 \usepackage{algpseudocode}
+\usepackage{soul}
+\setcitestyle{super}
 
 % Mathematical symbols
 \newcommand*{\imi}{i} % imaginary i
@@ -17,6 +19,10 @@
 % operators
 \newcommand{\op}[1]{\ensuremath{\hat{#1}}} % operator
 
+\makeatletter
+\renewcommand\NAT@biblabelnum[1]{{(#1)}}
+\makeatother
+
 %text color
 %\newcommand{\new}{\color{red}}
 %\newcommand{\blue}{\color{blue}}
@@ -24,7 +30,7 @@
 
 \begin{document}
 
-\bibliographystyle{naturemag}
+\bibliographystyle{achemso}
 
 \title{
 Direct unconstrained variable-metric localization of one-electron orbitals
@@ -55,16 +61,22 @@ It is demonstrated to produce well-localized orthogonal and nonorthogonal orbita
 \section{Introduction} 
 
 Spatially localized orbitals are of paramount importance in one-electron theories such as the Hartree-Fock method and Kohn-Sham density functional theory as well as in post-Hartree-Fock wavefunction-based electron correlation methods.
-Localized orbitals are widely used to describe and visualize chemical bonding between atoms thus helping classify bonds and understand electronic-structure origins of observed properties of atomistic systems. 
+Localized orbitals are widely used to describe and visualize chemical bonding between atoms thus helping classify bonds and understand electronic-structure origins of observed properties of atomistic systems.
+\textcolor{blue}{The natural bond orbitals~(NBOs) methods, which can be extracted from electronic structure theory methods,  are the another frequently and popular analysis methods to decipher the computational solution of Schr\"{o}dinger equation to more understandable Lewis structures and chemical bondind concepts.~\cite{glendening2012natural, weinhold2012natural}}
 Furthermore, localized orbitals are the key ingredient in multiple local electronic structure methods~\cite{goedecker1994efficient, bowler2012methods, zalesny2011linear, pulay1986orbital, saebo2001low, pisani2005local, hampel1996local, forner1997numerical} that dramatically reduce the computational cost of modeling electronic properties of large systems~\cite{saebo1993local, schutz1999low, hetzer2000low, schutz2001low}.
 Spatially localized orbitals are known as localized molecular orbitals (LMOs) in the field of molecular quantum chemistry and maximally localized Wannier functions (MLWFs) in solid state physics and materials science~\cite{marzari2012maximally}. 
 Here, they will be collectively referred to as LMOs whereas the eigenstates of the effective one-electron Hamiltonian will be called canonical molecular orbitals (CMOs) regardless of whether the system is isolated or treated with periodic boundary conditions.
 
 In traditional localization methods, LMOs are constructed by finding a unitary transformation of CMOs that minimizes a localization function that effectively measures the spread of individual orbitals. 
 Since CMOs are orthogonal and a unitary transformation preserves the orbital metric, LMOs obtained in this way are orthogonal (OLMOs) by construction~\cite{weinstein1971localized}.
-Multiple localization functions have been proposed for molecular systems including Boys-Foster~\cite{boys1960construction}, Edmiston-Ruedenberg~\cite{bytautas2002electron, bytautas2003split, edmiston1963localized}, Pipek-Mezey~\cite{pipek1989a_fast}, and Von Niessen~\cite{niessen1972density}. The Boys-Foster localization~\cite{boys1960construction} is perhaps the most popular because of the simplicity of its physical interpretation, low computational complexity and ease of implementation. 
-The Pipek-Mezey localization~\cite{pipek1989a_fast}, which maximizes atomic charges~\cite{mulliken1955electronic, lowdin1950non} of each orbital, is also widely used because it does not mix LMOs representing $\sigma$ and $\pi$ bonds and thus gives a clear picture of bonding patterns. 
-For large supercells of condensed phase periodic systems, where electronic structure can be described with the $\Gamma$-point sampling of the Brillouin zone, several efficient optimization methods have been proposed to construct MLWF ~\cite{marzari2012maximally, resta1998quantum, resta1999electron, silvestrelli1999maximally, berghold2000general}. 
+Multiple localization functions have been proposed for molecular systems including Boys-Foster~\cite{boys1960construction}, Edmiston-Ruedenberg~\cite{bytautas2002electron, bytautas2003split, edmiston1963localized}, Pipek-Mezey~\cite{pipek1989fast}, and Von Niessen~\cite{niessen1972density}. The Boys-Foster localization~\cite{boys1960construction} is perhaps the most popular because of the simplicity of its physical interpretation, low computational complexity and ease of implementation. 
+The Pipek-Mezey localization~\cite{pipek1989fast}, which maximizes atomic charges~\cite{mulliken1955electronic, lowdin1950non} of each orbital, is also widely used because it does not mix LMOs representing $\sigma$ and $\pi$ bonds and thus gives a clear picture of bonding patterns. 
+\textcolor{blue}{More advanced localization functionals have been proposed in the past decade, which are focus on increase the locality of the orbitals and reduce the orthogonality tails by introducing powers into the localization functionals.}
+\textcolor{blue}{By minimizing powers of the orbital variance in the Boys localization, the bulk locality has been improved.~\cite{jansik2011local}}
+\textcolor{blue}{To reduce the thickness of the orbital tails, the powers of the orbitals' fourth central moment has been proposed.~\cite{hoyvik2012orbital}}
+\textcolor{blue}{Unfortunately, the powers of the Pipek-Mezey scheme has been proved that it did not offer the locality improvement.~\cite{lehtola2014pipek}}
+\textcolor{blue}{As for obtaining the localized virtual orbitals, more advanced optimization methods, such as trust region methods~\cite{jansik2011local, hoyvik2012orbital, hoyvik2012trust, hoyvik2013pipek, hoyvik2017generalising}, are required due to not well separated multiple local minimum problem. }
+For large supercells of condensed phase periodic systems, where electronic structure can be described with the $\Gamma$-point sampling of the Brillouin zone, several efficient optimization methods have been proposed to construct MLWF ~\cite{marzari2012maximally, resta1998quantum, resta1999electron, silvestrelli1999maximally, berghold2000general, jonsson2017theory}. 
 %
 While the methods listed above rely on different localization criteria they have been formulated to ensure that orbitals remain orthogonal in a localization procedure. This is typically achieved through the exponential~\cite{berghold2000general} or Cayley parameterization of unitary transformations or through simple Jacobi rotations~\cite{edmiston1963localized}.
 % Instead of converting CMOs to LMOs after sloving the SCF equations, studies have also been focused on directly obtaining LMOs by solving SCF equations~\cite{polly2004fast, peng2013effective, edmiston1963localized, edmiston1965localized}.
@@ -75,7 +87,7 @@ More importantly, the tails can reduce orbital locality making orbital-based loc
 To mitigate the undesirable orthogonality effects, metric-preserving unitary transformation has been applied to nonorthogonal orbitals~\cite{hoyvik2017generalising}. 
 Furthermore, it has been proposed to replace unitary transformation with more general variable-metric nonsingular transformations. 
 This generalization lifts the orthogonality constraint in the localization procedure and increases the number of degrees of freedom available to LMOs~\cite{anderson1968self, diner1968fully, magnasco1974localized, payne1977hartree, mehler1977self, feng2004An_efficient, cui2010efficient}. 
-It has been found that NLMOs are indeed about $10-30 \%$ more localized than OLMOs if measured by the value of the Boys-Foster function~\cite{feng2004An_efficient, liu2000nonorthogonal}. 
+It has been found that \textcolor{blue}{nonorthogonal localized molecular orbitals~(NLMOs)} are indeed about $10-30 \%$ more localized than OLMOs if measured by the value of the Boys-Foster function~\cite{feng2004An_efficient, liu2000nonorthogonal}. 
 
 Substantial recent efforts have been made to develop reliable algorithms to construct NLMOs~\cite{feng2004An_efficient, liu2000nonorthogonal, peng2013effective, hoyvik2017generalising}. 
 Despite noticeable progress the existing methods produce NLMOs that are either still fairly similar to OLMOs~\cite{sundberg1979variationally} or lead to the linear dependence between the orbitals~\cite{feng2004An_efficient}. 
@@ -83,8 +95,8 @@ To overcome the linear dependence problem, Yang and co-workers~\cite{feng2004An_
 The positions of the centers can be taken from the corresponding OLMOs~\cite{feng2004An_efficient} or simply guessed based on the knowledge of bonding patterns in a system~\cite{cui2010efficient}. %(i.e.``chemical intuition'')
 While this method solves severe linear dependence issues, it requires either the computational effort to find the OLMOs centroids or good understanding of bonding properties in advance, which may limit the application of the method to relatively simple systems with unambiguous Lewis structures.
 
-In this work, we propose a variable-metric method to simplify the construction and improve locality of orthogonal and nonorthogonal LMOs. 
-The key new component of the method is a simple penalty function that prevents LMOs from becoming linear dependent and allows to choose the desirable balance between the nonorthogonality and locality of LMOs. 
+In this work, we propose a variable-metric method to simplify the construction and improve locality of \st{orthogonal and nonorthogonal} \textcolor{blue}{the} LMOs. 
+The key new component of the method is a simple penalty function that prevents LMOs from becoming linear\textcolor{blue}{ly} dependent and allows to choose the desirable balance between the nonorthogonality and locality of LMOs. 
 The penalty function replaces all constraints that are normally imposed on localized orbitals with a single restriction that specifies the allowed deviation from the orthogonality for the final localized orbitals. 
 For \mbox{OLMOs}, the method is advantageous because it optimizes orbital mixing coefficients directly, obviating complicated parameterization of unitary transformations and simplifying orbital optimization algorithms.  
 For \mbox{NLMOs}, the new approach allows to determine the optimal positions of their centers automatically in an unconstrained and straightforward optimization procedure, without \emph{a priori} knowledge of bonding patterns in the system.
@@ -300,7 +312,7 @@ In this work, we adopted the localization function proposed by Resta~\cite{resta
 %
 \begin{equation} \label{eq:fun-loc}
 \begin{split}
-\Omega_L(\mathbf{A}) &= - \sum_K \sum_i \omega_K \vert z_{i}^{K} \vert^2, \\
+\Omega_L(\mathbf{A}) &= - \sum_K \sum_i \omega_K (\color{blue}{1 -} \color{black}\vert z_{i}^{K} \vert^2), \\
 %%%\Omega_L(\mathbf{A}) &= - \sum_K \sum_i \omega_K \log \vert z_{i}^{K} \vert^2, \\
 z_{i}^{K} &= {A^m}_i B^{K}_{mn} {A^n}_i, \\
 B^{K}_{mn} &= \bra{m_0} \E^{\imi \mathbf{G}_K \cdot \mathbf{\op{r}}} \ket{n_0}
@@ -314,7 +326,7 @@ We also considered the Pipek-Mezey localization function~\cite{pipek1989fast,leh
 \begin{equation} \label{eq:pipek}
 \begin{split}
 %%%\Omega_L^{\text{PM}}(\mathbf{A}) &= \sum_{K=1}^{\text{Atoms}} \sum_i (1 - \vert z_{i}^{K} \vert^2), \\
-\Omega_L^{\text{PM}}(\mathbf{A}) &= - \sum_{K=1}^{\text{Atoms}} \sum_i \vert z_{i}^{K} \vert^2, \\
+\Omega_L^{\text{PM}}(\mathbf{A}) &= - \sum_{K=1}^{\text{Atoms}} \sum_i (\color{blue}{1 -} \color{black}\vert z_{i}^{K} \vert^2), \\
 z_{i}^{K} &= {A^m}_i B^{K}_{mn} {A^n}_i, \\
 B^{K}_{mn} &= \frac{1}{2} \sum_{\mu \in K} \bra{m_0}  \left( \ketbra{\chi_{\mu}}{\chi^{\mu}} + \ketbra{\chi^{\mu}}{\chi_{\mu}} \right) \ket{n_0}
 \end{split}
@@ -365,6 +377,14 @@ The logarithm of the determinant of the symmetric positive definite overlap matr
 \end{split}
 \end{equation}
 %
+%
+\begin{figure*}[hbpt]
+\centering
+\includegraphics[width=\textwidth]{trend.pdf}
+\caption{The dependence of the optimal localization function and determinant of the NLMO overlap on $\alpha$ -- the adjustable part of the penalty strength. The first point on the left is $\alpha = \log^{-1} 10 \approx 0.434$.}
+\label{fig:alpha}
+\end{figure*}
+%
 where $\mathbf{s}=\left[\text{diag}(\sigma)\right]^{1/2}$. The series converges only if $\|\mathbf{X}\|_F < 1$. If it is not the case, the square root of $\mathbf{I}+\mathbf{X}$ is computed recursively until the norm requirement is satisfied. The advantage of this algorithm is that relies exclusively on matrix-matrix multiplication and can be readily implemented in any matrix library. Its computational cost grows cubically with the number of orbitals for dense matrices and linearly for sparse overlap matrices of localized orbitals.
 
 The localization procedure was implemented in the CP2K software package~\cite{cp2kgeneral}. The DBCSR library~\cite{borvstnik2014sparse} that handles sparse matrices efficiently on massively-parallel computing platforms is utilized to enable orbital localization in large systems.
@@ -372,37 +392,35 @@ The localization procedure was implemented in the CP2K software package~\cite{cp
 \subsection{Computational details}
 
 To test the localization procedure, we constructed NLMOs for several systems ranging from a simple water molecule to complex molecules with non-trivial bonding patterns and to large periodic systems. 
-%
 For all systems, the initial CMOs were obtained using the conventional diagonalization-based SCF procedure implemented in the electronic structure module of CP2K. 
 The Becke-Lee-Yang-Parr generalized gradient approximation~\cite{becke1988density, lee1988development} was used as the exchange-correlation functional.
 Goedecker-Teter-Hutter pseudopotentials~\cite{goedecker1996separable} were used together with a triple-$\zeta$ atom-centered Gaussian basis set with two sets of polarization functions for all atoms. 
 The energy cutoff was set at 600 Ry to define the auxiliary plane-wave basis set in the construction of the effective Hamiltonian. 
 The integration over the Brillouin zone was performed using the $\Gamma$-point approximation.
-
+%
+\begin{figure}[htb]
+\centering
+\includegraphics[scale=0.5]{carborane.pdf}
+\caption{Orthogonal (middle) and nonorthogonal (right) LMOs of three-center-two-electron B-B-B bond in the carborane molecule C$_2$B$_{10}$H$_{12}$. The isosurface value is 0.04~a.u.}
+\label{fig:boro}
+\end{figure}
+%
 
 \section{Results and discussion}
 
 \subsection{Compromise between locality and orthogonality}
 
-\begin{figure*}[hbpt]
-\centering
-\includegraphics[width=\textwidth]{trend.pdf}
-\caption{The dependence of the optimal localization function and determinant of the NLMO overlap on $\alpha$ -- the adjustable part of the penalty strength. The first point on the left is $\alpha = \log^{-1} 10 \approx 0.434$.}
-\label{fig:alpha}
-\end{figure*}
-
 For all test systems, the conjugate gradient localization procedure in Figure~\ref{alg:cg} is stable and efficient. The numerical precision of the implemented code allows to treat NLMOs with $\det(\sigma)$ as lows as $10^{-8}$ as distinct. However, a visual inspection of NLMOs with such a tiny overlap determinant reveals that many orbitals become almost identical (for example, localized on the same bonds) with only minor physically irrelevant differences. At the same time, NLMOs with $\det(\sigma) > 10^{-1}$ are found to highlight bonding patterns in all test systems correctly. Therefore, we set the minimum allowed NLMO determinant $\text{D}_{\text{tar}}$ to $10^{-1}$ in all tests. The initial value of $\alpha=\log^{-1} 10$ was set according to Eq.~(\ref{eq:cp-alpha}). The value of $\alpha$ was decreased by a factor of two in the outer loop of the algorithm (Figure~\ref{alg:cg}) until the overlap determinant fell below $\text{D}_{\text{tar}}$ or until the optimal $\Omega_{L}$ stopped changing with $c_P$ appreciably (see water, diborane, heptane examples in Figure~\ref{fig:alpha}).
+%
+\begin{figure}[htbp]
+\includegraphics[scale=0.8]{C72H24.pdf} 
+  \caption{OLMO (top) and NLMO (bottom) representation of a $\pi$-bond in the $\pi$-conjugated 2D polymer decacyclene C$_{72}$H$_{24}$. The isosurface value is set at a relatively low value of 0.002~a.u. to emphasize the tails of the orbitals.}
+\label{fig:decacyclene}
+\end{figure}
+%
 
 Since the determinant of the overlap is proportional to the square of the volume of the parallelepiped spanned by the NLMO vectors, $\text{D}_{\text{tar}}=10^{-1}$ corresponds to the volume of $\det(\mathbf{A})\approx 0.32$, which is large enough to produce distinct NLMOs.
-
-Figure~\ref{fig:alpha} demonstrates how the penalty strength affects the optimal orbital localization and the determinant of the orbital overlap. In all tests, the initial penalty strength is sufficiently large to produce almost perfectly orthogonal localized orbitals. At the same time it is not too large to yield more localized nonorthogonal localized orbitals after just several steps of $c_P$ adjustment. %Figure~\ref{fig:alpha} shows that $c_P$ can be adjusted with a black-box algorithms to generate linearly independent NLMOs.
-
-Figure~\ref{fig:alpha} shows that within a large range of values spanning 3--6 orders of magnitude $c_P$ serves as an adjustable parameter that can be tuned to achieve a desirable locality-orthogonality compromise. 
-Thus the flexibility of the unconstrained localization method presented here allows to combine the strengths of the existing localization methods that produce either orthogonal orbitals or NLMOs with fixed localization centers. It is also important to emphasize that the localization procedure is unconstrained, does not require complicated parameterization of unitary matrices and relies on a simple easy-to-implement conjugate gradient optimization algorithm. 
-
-
-\subsection{NLMOs are more localized than OLMOs}
-
+%
 \begin{table*}[htbp]
 \caption{The relative reduction in the localization function and the final determinant of the NLMO overlap.}
 \label{tab:loc}
@@ -430,38 +448,10 @@ Average & 70 & 76 & 18 & 0.114 \\
 \end{tabular}
 \label{table:nonlin}
 \end{table*}
+%
 
-Figure~\ref{fig:alpha} reveals the expected trend: the orbitals become more localized as they are allowed to be less orthogonal. 
-The relative reduction in the localization is quantified by $\Delta_{X/Y} \equiv \frac{\Omega_L(Y)-\Omega_L(X)}{\Omega_L(Y)} \times 100 \%$, where $X$ and $Y$ can refer to CMOs, OLMOs or NLMOs.
-Table~\ref{table:nonlin} compares the relative reduction as measured by the Berghold function for OLMO/CMO, NLMO/CMO and NLMO/OLMO pairs. Although NLMOs are constructed with $D_{\text{tar}}$ set to $10^{-1}$, most final values of the NLMO overlap determinants (last column in Table~\ref{tab:loc}) are somewhat lower than $D_{\text{tar}}$ because the last outer-loop iteration brings $\det(\sigma)$ below $D_{\text{tar}}$. %It is worth mentioning that the algorithm can be modified to treat the penalty strength $c_P$ as a Lagrange multiplier that imposes a rigorous constraint $\det\left[\sigma\right]=D_{\text{tar}}$. 
-
-The relative reduction in localization between OLMOs and CMOs ranges from 22\% to 98\% and reaches high values for extended systems (e.g. icosane) where the localization has the ability to reduce the spread significantly. The average relative reduction for the dataset considered here is 70\%. The NLMOs are even more localized than OLMOs. The relative reduction in localization between NLMOs and OLMOs ranges from 6\% to 30\% with the dataset average of 18\%. This additional reduction in the orbital spread can lead to a substantial reduction in the number of significant excitation amplitudes in local electron-correlation methods and to noticeable computational savings.
-
-The relative reduction in localization between OLMOs and NLMOs is similar to that obtained with the algorithms that fix NLMO localization centers~\cite{feng2004An_efficient, cui2010efficient}. 
-Since the NLMOs centers were previously fixed at the position of OLMOs centers this implies that the locations of the centers of NLMOs and OLMOs are very similar. It also suggests that the NLMOs obtained with $D_{\text{tar}}=10^{-1}$ represent the electronic structure of molecules reliably and also serves as an additional verification of the previously employed fixed-center procedures. 
-
-\begin{figure}[htb]
-\centering
-\includegraphics[scale=0.5]{carborane.pdf}
-\caption{Orthogonal (middle) and nonorthogonal (right) LMOs of three-center-two-electron B-B-B bond in the carborane molecule C$_2$B$_{10}$H$_{12}$. The isosurface value is 0.04~a.u.}
-\label{fig:boro}
-\end{figure}
-
-Figures~\ref{fig:boro}, \ref{fig:graphene}, \ref{fig:decacyclene} and \ref{fig:pipek} compare the shapes of NLMOs and OLMOs for several representative isolated molecules and periodic systems. 
-Figure~\ref{fig:boro} shows that the NLMOs and OLMOs of a carborane C$_2$B$_{10}$H$_{12}$ molecule representing a three-center-two-electron B--B--B bond have similar positions of their centroids and similar overall shape. 
-The main lobes (red region) of NLMOs are larger than those of OLMOs whereas NLMO peripheral tails are smaller. This redistribution of the probability density amplitude towards the center of NLMO is what makes NLMOs more localized than OLMOs -- the effect noted previously~\cite{liu2000nonorthogonal}. 
-%Since the NLMOs have less space occupation and smaller orthogonalization tails, the main lobes should have relative larger sizes.
-
-\begin{figure}[htbp]
-\includegraphics[scale=0.8]{C72H24.pdf} 
-  \caption{OLMO (top) and NLMO (bottom) representation of a $\pi$-bond in the $\pi$-conjugated 2D polymer decacyclene C$_{72}$H$_{24}$. The isosurface value is set at a relatively low value of 0.002~a.u. to emphasize the tails of the orbitals.}
-\label{fig:decacyclene}
-\end{figure}
-
-The reduced tails of NLMOs are also visible in Figure~\ref{fig:decacyclene}, which shows LMO representation of a $\pi$-bond in the extended $\pi$-conjugated 2D polymer decacyclene C$_{72}$H$_{24}$. Without strict orthogonality constraints, these tails can be reduced even further by imposing higher-order (e.g. quartic) penalty on amplitudes far away from the orbital center~\cite{hoyvik2012orbital}.
-
-\subsection{$\sigma$-$\pi$ mixing}
-
+Figure~\ref{fig:alpha} demonstrates how the penalty strength affects the optimal orbital localization and the determinant of the orbital overlap. In all tests, the initial penalty strength is sufficiently large to produce almost perfectly orthogonal localized orbitals. At the same time it is not too large to yield more localized nonorthogonal localized orbitals after just several steps of $c_P$ adjustment. %Figure~\ref{fig:alpha} shows that $c_P$ can be adjusted with a black-box algorithms to generate linearly independent NLMOs.
+%
 \begin{figure}[hbpt]
 \centering
 \includegraphics[scale=0.6]{graphene.pdf}
@@ -469,27 +459,87 @@ The reduced tails of NLMOs are also visible in Figure~\ref{fig:decacyclene}, whi
 }
 \label{fig:graphene}
 \end{figure}
+%
 
-Figure~\ref{fig:graphene} compares typical NLMOs and OLMOs of graphene. 
-The single C--C $\sigma$ bonds are well reproduced by OLMOs and NLMOs but both types of LMOs fail to represent the double bonds adequately.  OLMOs tend to delocalize over several bonds complicating analysis of the electron pairs. Although NLMOs are more localized and extend only over two carbon atoms, they tend to take the shape of a mixture between $\sigma$ and $\pi$ bonds producing the so-called $\tau$ orbitals. To prevent the $\sigma$-$\pi$ mixing, the Berghold localization function was replaced with the Pipek-Mezey function. 
+Figure~\ref{fig:alpha} shows that within a large range of values spanning 3--6 orders of magnitude $c_P$ serves as an adjustable parameter that can be tuned to achieve a desirable locality-orthogonality compromise. 
+Thus the flexibility of the unconstrained localization method presented here allows to combine the strengths of the existing localization methods that produce either orthogonal orbitals or NLMOs with fixed localization centers. It is also important to emphasize that the localization procedure is unconstrained, does not require complicated parameterization of unitary matrices and relies on a simple easy-to-implement conjugate gradient optimization algorithm. 
 
+
+\subsection{NLMOs are more localized than OLMOs}
+
+%
 \begin{figure*}[htbp]
 \centering
 \includegraphics[scale=0.5]{boys_pipek.pdf}
 \caption{Comparison of OLMOs (top) and NLMOs (bottom) computed with the Berghold and Pipek-Mezey localization functions for benzene and allyl alcohol. The isosurface value is 0.05~a.u.}
 \label{fig:pipek}
 \end{figure*}
+%
+
+Figure~\ref{fig:alpha} reveals the expected trend: the orbitals become more localized as they are allowed to be less orthogonal. 
+The relative reduction in the localization is quantified by $\Delta_{X/Y} \equiv \frac{\Omega_L(Y)-\Omega_L(X)}{\Omega_L(Y)} \times 100 \%$, where $X$ and $Y$ can refer to CMOs, OLMOs or NLMOs.
+Table~\ref{table:nonlin} compares the relative reduction as measured by the Berghold function for OLMO/CMO, NLMO/CMO and NLMO/OLMO pairs. Although NLMOs are constructed with $D_{\text{tar}}$ set to $10^{-1}$, most final values of the NLMO overlap determinants (last column in Table~\ref{tab:loc}) are somewhat lower than $D_{\text{tar}}$ because the last outer-loop iteration brings $\det(\sigma)$ below $D_{\text{tar}}$. %It is worth mentioning that the algorithm can be modified to treat the penalty strength $c_P$ as a Lagrange multiplier that imposes a rigorous constraint $\det\left[\sigma\right]=D_{\text{tar}}$. 
+%
+\begin{figure}[htbp]
+\centering
+\includegraphics[scale=0.59]{orbital_spread.pdf}
+\caption{The relationship between the orbital spread and -log(det($\sigma$)) of the Berghold NLMOs and Pipek-Mezey NLMOs. The isosurface value is 0.05~a.u.}
+\label{fig:orbital_spread}
+\end{figure}
+%
+
+The relative reduction in localization between OLMOs and CMOs ranges from 22\% to 98\% and reaches high values for extended systems (e.g. icosane) where the localization has the ability to reduce the spread significantly. The average relative reduction for the dataset considered here is 70\%. The NLMOs are even more localized than OLMOs. The relative reduction in localization between NLMOs and OLMOs ranges from 6\% to 30\% with the dataset average of 18\%. This additional reduction in the orbital spread can lead to a substantial reduction in the number of significant excitation amplitudes in local electron-correlation methods and to noticeable computational savings.
+%
+\begin{figure*}[htbp]
+\centering
+\includegraphics[width=\textwidth]{graphene_table.pdf}
+\caption{Comparison of NLMOs orbitals and orbital spreads with different determinants computed with the Berghold and Pipek-Mezey localization functions for graphene. The isosurface value is 0.05~a.u.}
+\label{fig:graphene_table}
+\end{figure*}
+%
+
+The relative reduction in localization between OLMOs and NLMOs is similar to that obtained with the algorithms that fix NLMO localization centers~\cite{feng2004An_efficient, cui2010efficient}. 
+Since the NLMOs centers were previously fixed at the position of OLMOs centers this implies that the locations of the centers of NLMOs and OLMOs are very similar. It also suggests that the NLMOs obtained with $D_{\text{tar}}=10^{-1}$ represent the electronic structure of molecules reliably and also serves as an additional verification of the previously employed fixed-center procedures. 
+
+Figures~\ref{fig:boro}, \ref{fig:graphene}, \ref{fig:decacyclene} and \ref{fig:pipek} compare the shapes of NLMOs and OLMOs for several representative isolated molecules and periodic systems. 
+Figure~\ref{fig:boro} shows that the NLMOs and OLMOs of a carborane C$_2$B$_{10}$H$_{12}$ molecule representing a three-center-two-electron B--B--B bond have similar positions of their centroids and similar overall shape. 
+The main lobes (red region) of NLMOs are larger than those of OLMOs whereas NLMO peripheral tails are smaller. This redistribution of the probability density amplitude towards the center of NLMO is what makes NLMOs more localized than OLMOs -- the effect noted previously~\cite{liu2000nonorthogonal}. 
+%Since the NLMOs have less space occupation and smaller orthogonalization tails, the main lobes should have relative larger sizes.
+
+The reduced tails of NLMOs are also visible in Figure~\ref{fig:decacyclene}, which shows LMO representation of a $\pi$-bond in the extended $\pi$-conjugated 2D polymer decacyclene C$_{72}$H$_{24}$. Without strict orthogonality constraints, these tails can be reduced even further by imposing higher-order (e.g. quartic) penalty on amplitudes far away from the orbital center~\cite{hoyvik2012orbital}.
+
+\subsection{$\sigma$-$\pi$ mixing}
+
+Figure~\ref{fig:graphene} compares typical NLMOs and OLMOs of graphene. 
+The single C--C $\sigma$ bonds are well reproduced by OLMOs and NLMOs but both types of LMOs fail to represent the double bonds adequately.  OLMOs tend to delocalize over several bonds complicating analysis of the electron pairs. Although NLMOs are more localized and extend only over two carbon atoms, they tend to take the shape of a mixture between $\sigma$ and $\pi$ bonds producing the so-called $\tau$ orbitals. To prevent the $\sigma$-$\pi$ mixing, the Berghold localization function was replaced with the Pipek-Mezey function. 
 
 The OLMOs and NLMOs obtained with the Pipek-Mezey and Berghold localization schemes were compared for benzene and allyl alcohol (Figure~\ref{fig:pipek}). 
 For OLMOs, the Pipek-Mezey scheme preserves the separation between the $\sigma$ and $\pi$ bonds~\cite{pipek1989fast}.
-However, as the determinant of the NLMO overlap decreases the $\sigma$-$\pi$ separation of the Pipek-Mezey scheme is not maintained and a pair of $\sigma$ and $\pi$ bonds tend to mix generating a pair of $\tau$ and $\tau'$ NLMOs (Figure~\ref{fig:pipek}).  Despite the failure to preserve the $\sigma$-$\pi$ separation the Pipek-Mezey NLMOs are more localized than those obtained with the Berghold (i.e. Boys-Foster) scheme.
-
+However, as the determinant of the NLMO overlap decreases the $\sigma$-$\pi$ separation of the Pipek-Mezey scheme is not maintained and a pair of $\sigma$ and $\pi$ bonds tend to mix generating a pair of $\tau$ and $\tau'$ NLMOs (Figure~\ref{fig:pipek}).  
+\st{Despite the failure to preserve the $\sigma$-$\pi$ separation the Pipek-Mezey NLMOs are more localized than those obtained with the Berghold (i.e. Boys-Foster) scheme.}
+\textcolor{blue}{Not only the failure to preserve the $\sigma$-$\pi$ separation but the Pipek-Mezey NLMOs are also less localized than those obtained with the Berghold (i.e. Boys-Foster) scheme.}
+\textcolor{blue}{Figure~\ref{fig:orbital_spread} demonstrates the change of orbital spread (defined in Eq~\ref{eq:orbital_spread}) and -log(det($\sigma$)).}
+%
+\begin{equation} \label{eq:orbital_spread}
+\begin{split}
+\color{blue}{S = - \frac{1}{(2\pi)^2}\sum_K \sum_i \omega_K (1 - \vert z_{i}^{K} \vert^2)}
+\end{split}
+\end{equation}
+%
+\textcolor{blue}{The NLMOs generated by Pipek-Mezey localization functional are tend to have larger orbital spread compared with Berghold NLMOs in graphene and benzene systems, which indicates that the Pipek-Mezy NLMOs are less compact than the Berghold NLMOs.}
+\textcolor{blue}{This statement could also confirm by visual comparison of several NLMOs with different extents of nonorthogonality generated by Pipek-Mezey and Berghold scheme, respectively.}
+\textcolor{blue}{The second column in the Figure~\ref{fig:graphene_table} shows that the Berghold NLMO has better interpretation of the $\tau$ bond, which is the results of $\sigma$-$\pi$ mixing, compared with Pipek-Mezey NLMOs}
+\textcolor{blue}{With the orbital becoming more and more localized and nonorthogonal, the Pipek-Mezey orbital with much lower determinant, which is located in the third column in Figure~\ref{fig:graphene_table}, is finally able to express the proper boding pattern in the system.}
+\textcolor{blue}{The tails of the Pipek-Mezey NLMO is still noticeable larger than the Berghold orbital, which could explain the higher orbital spread we observed in Figure~\ref{fig:orbital_spread}.}
+\textcolor{blue}{We also notice that even though Pipek-Mezey NLMOs are tend to have larger tails, the main lobes (right region) are smaller than the Berghold NLMOs.}
+%
 \begin{figure}[hbpt]
 \centering
 \includegraphics[scale=0.35]{sigma_pi_mixing.pdf}
 \caption{A. The $\sigma$ and $\pi$ separation and mixed orbitals for a toy system of two atoms (A and B), each with a $p_x$ and $p_z$ atomic orbitals. B. The contour of the localization function with different value of $\Theta$ and $\Phi$. Red line: $\det(\sigma) = 1$; Yellow line: $\det(\sigma) = 10^{-1}$.}
 \label{fig:sigma_pi_mixing}
 \end{figure}
+%
 
 It has been shown that, in the original Pipek-Mezey localization scheme designed for OLMOs, $\tau$ and $\tau'$ orbitals cannot be more localized than $\sigma$ and $\pi$ orbitals~\cite{pipek1989fast}
 %
@@ -535,7 +585,7 @@ An additional black-box algorithm is proposed to tune the penalty strength and p
 We found that NLMOs with the minimum allowed determinant of the order of $10^{-1}$ correctly recover bonding patterns in a variety of molecules and materials including large systems with non-trivial bonding. NLMOs are approximately $18\%$ more localized than OLMOs and have reduced tails.
 This observation is consistent with previous results obtained for the NLMOs with the localization centers fixed at the OLMO positions~\cite{feng2004An_efficient, cui2010efficient}. It serves as an additional verification of the previously employed procedures and implies that the NLMOs representation of the electronic structure of molecules is reliable. 
 
-Comparative analysis of the localized orbitals constructed with the Berghold and Pipek-Mezey localization functions indicates that the latter produces orbitals with less noticeable tails. To our surprise, the Pipek-Mezey localization, which has been a reliable method to separate orthogonal $\sigma$ and $\pi$ orbitals in locally planar systems with double bonds, tend to mix these orbitals when they are allowed to become strongly nonorthogonal. The origins of this effect was explained using a simple two-orbital system as an example.
+Comparative analysis of the localized orbitals constructed with the Berghold and Pipek-Mezey localization functions indicates that the latter produces orbitals with \st{less} \textcolor{blue}{more} noticeable tails. To our surprise, the Pipek-Mezey localization, which has been a reliable method to separate orthogonal $\sigma$ and $\pi$ orbitals in locally planar systems with double bonds, tend to mix these orbitals when they are allowed to become strongly nonorthogonal. The origins of this effect was explained using a simple two-orbital system as an example.
 
 The broader significance of this work is in the new continuous easy-to-compute nonorthogonality measure that can be adopted by a variety of electronic structure theories that benefit from nonorthogonal representation of wavefunctions. %and have significant impact on modeling of complex systems.
 
