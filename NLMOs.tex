@@ -72,16 +72,9 @@ Since CMOs are orthogonal and a unitary transformation preserves the orbital met
 Multiple localization functions have been proposed for molecular systems including Boys-Foster~\cite{boys1960construction}, Edmiston-Ruedenberg~\cite{bytautas2002electron, bytautas2003split, edmiston1963localized}, Pipek-Mezey~\cite{pipek1989fast}, and Von Niessen~\cite{niessen1972density}. The Boys-Foster localization~\cite{boys1960construction} is perhaps the most popular because of the simplicity of its physical interpretation, low computational complexity and ease of implementation. 
 The Pipek-Mezey localization~\cite{pipek1989fast}, which maximizes atomic charges~\cite{mulliken1955electronic, lowdin1950non, lehtola2014pipek} of each orbital, is also widely used because it does not mix LMOs representing $\sigma$ and $\pi$ bonds and thus gives a clear picture of bonding patterns. 
 \textcolor{blue}{In the last decade, these well-established localization functions have been modified to reduce orbital tails and produce more uniform localization across the set of LMOs~\cite{jansik2011local, hoyvik2012orbital, hoyvik2012trust, hoyvik2013pipek, lehtola2013unitary, lehtola2014pipek}.}
-%%%%\textcolor{blue}{More advanced localization functions have been proposed in the past decade, which are focus on increase the locality of the orbitals and reduce the orthogonality tails by introducing powers into the localization functions.}
-%%%%\textcolor{blue}{By minimizing powers of the orbital variance in the Boys localization, the bulk locality has been improved.~\cite{jansik2011local}}
-%%%%\textcolor{blue}{To reduce the thickness of the orbital tails, the powers of the orbitals' fourth central moment has been proposed.~\cite{hoyvik2012orbital}}
-%%%%\textcolor{blue}{Unfortunately, the powers of the Pipek-Mezey scheme has been proved that it did not offer the locality improvement.~\cite{lehtola2014pipek}}
-%%%%\textcolor{blue}{As for obtaining the localized virtual orbitals, more advanced optimization methods, such as trust region methods~\cite{jansik2011local, hoyvik2012orbital, hoyvik2012trust, hoyvik2013pipek, hoyvik2017generalising}, are required due to not well separated multiple local minimum problem. }
-%
 For large supercells of condensed phase periodic systems, where electronic structure can be described with the $\Gamma$-point sampling of the Brillouin zone, several efficient optimization methods have been proposed to construct MLWF~\cite{marzari2012maximally, resta1998quantum, resta1999electron, silvestrelli1999maximally, berghold2000general, jonsson2017theory}. 
 %
 While the methods listed above rely on different localization criteria they have been formulated to ensure that orbitals remain orthogonal in a localization procedure. This is typically achieved through the exponential~\cite{berghold2000general} or Cayley parameterization of unitary transformations or through simple Jacobi rotations~\cite{edmiston1963localized}.
-% Instead of converting CMOs to LMOs after sloving the SCF equations, studies have also been focused on directly obtaining LMOs by solving SCF equations~\cite{polly2004fast, peng2013effective, edmiston1963localized, edmiston1965localized}.
 
 Due to the imposed orthogonality condition, orthogonal LMOs exhibit small non-zero values even far away from the localization center. 
 These orthogonalization tails can complicate the interpretation of chemically relevant electronic-structure information and make its transferability from one system to another more difficult. 
@@ -381,7 +374,7 @@ The logarithm of the determinant of the symmetric positive definite overlap matr
 %
 where $\mathbf{s}=\left[\text{diag}(\sigma)\right]^{1/2}$. The series converges only if $\|\mathbf{X}\|_F < 1$. If it is not the case, the square root of $\mathbf{I}+\mathbf{X}$ is computed recursively until the norm requirement is satisfied. The advantage of this algorithm is that relies exclusively on matrix-matrix multiplication and can be readily implemented in any matrix library. Its computational cost grows cubically with the number of orbitals for dense matrices and linearly for sparse overlap matrices of localized orbitals.
 
-The localization procedure was implemented in the CP2K software package~\cite{cp2kgeneral}. The DBCSR library~\cite{borvstnik2014sparse} that handles sparse matrices efficiently on massively-parallel computing platforms is utilized to enable orbital localization in large systems.
+The localization procedure was implemented in the CP2K software package~\cite{cp2kgeneral, kuhne2020cp2k}. The DBCSR library~\cite{borvstnik2014sparse} that handles sparse matrices efficiently on massively-parallel computing platforms is utilized to enable orbital localization in large systems.
 
 \subsection{Computational details}
 
@@ -404,13 +397,6 @@ The integration over the Brillouin zone was performed using the $\Gamma$-point a
 \end{figure*}
 
 For all test systems, the conjugate gradient localization procedure in Figure~\ref{alg:cg} is stable and efficient. The numerical precision of the implemented code allows to treat NLMOs with $\det(\sigma)$ as lows as $10^{-8}$ as distinct. However, a visual inspection of NLMOs with such a tiny overlap determinant reveals that many orbitals become almost identical (for example, localized on the same bonds) with only minor physically irrelevant differences. At the same time, NLMOs with $\det(\sigma) > 10^{-1}$ are found to highlight bonding patterns in all test systems correctly. Therefore, we set the minimum allowed NLMO determinant $\text{D}_{\text{tar}}$ to $10^{-1}$ in all tests. The initial value of $\alpha=\log^{-1} 10$ was set according to Eq.~(\ref{eq:cp-alpha}). The value of $\alpha$ was decreased by a factor of two in the outer loop of the algorithm (Figure~\ref{alg:cg}) until the overlap determinant fell below $\text{D}_{\text{tar}}$ or until the optimal $\Omega_{L}$ stopped changing with $c_P$ appreciably (see water, diborane, heptane examples in Figure~\ref{fig:alpha}).
-%
-\begin{figure}[htbp]
-\includegraphics[scale=0.8]{C72H24.pdf} 
-  \caption{OLMO (top) and NLMO (bottom) representation of a $\pi$-bond in the $\pi$-conjugated 2D polymer decacyclene C$_{72}$H$_{24}$. The isosurface value is set at a relatively low value of 0.002~a.u. to emphasize the tails of the orbitals.}
-\label{fig:decacyclene}
-\end{figure}
-%
 
 Since the determinant of the overlap is proportional to the square of the volume of the parallelepiped spanned by the NLMO vectors, $\text{D}_{\text{tar}}=10^{-1}$ corresponds to the volume of $\det(\mathbf{A})\approx 0.32$, which is large enough to produce distinct NLMOs.
 %
@@ -444,7 +430,7 @@ Average & 70 & 76 & 18 & 0.114 \\
 %
 
 Figure~\ref{fig:alpha} demonstrates how the penalty strength affects the optimal orbital localization and the determinant of the orbital overlap. In all tests, the initial penalty strength is sufficiently large to produce almost perfectly orthogonal localized orbitals. At the same time it is not too large to yield more localized nonorthogonal localized orbitals after just several steps of $c_P$ adjustment. %Figure~\ref{fig:alpha} shows that $c_P$ can be adjusted with a black-box algorithms to generate linearly independent NLMOs.
-%
+
 \begin{figure}[hbpt]
 \centering
 \includegraphics[scale=0.6]{graphene.pdf}
@@ -505,6 +491,12 @@ Figures~\ref{fig:boro}, \ref{fig:graphene}, \ref{fig:decacyclene} and \ref{fig:p
 Figure~\ref{fig:boro} shows that the NLMOs and OLMOs of a carborane C$_2$B$_{10}$H$_{12}$ molecule representing a three-center-two-electron B--B--B bond have similar positions of their centroids and similar overall shape. 
 The main lobes (red region) of NLMOs are larger than those of OLMOs whereas NLMO peripheral tails are smaller. This redistribution of the probability density amplitude towards the center of NLMO is what makes NLMOs more localized than OLMOs -- the effect noted previously~\cite{liu2000nonorthogonal}. 
 %Since the NLMOs have less space occupation and smaller orthogonalization tails, the main lobes should have relative larger sizes.
+
+\begin{figure}[htbp]
+\includegraphics[scale=0.8]{C72H24.pdf} 
+  \caption{OLMO (top) and NLMO (bottom) representation of a $\pi$-bond in the $\pi$-conjugated 2D polymer decacyclene C$_{72}$H$_{24}$. The isosurface value is set at a relatively low value of 0.002~a.u. to emphasize the tails of the orbitals.}
+\label{fig:decacyclene}
+\end{figure}
 
 The reduced tails of NLMOs are also visible in Figure~\ref{fig:decacyclene}, which shows LMO representation of a $\pi$-bond in the extended $\pi$-conjugated 2D polymer decacyclene C$_{72}$H$_{24}$. Without strict orthogonality constraints, these tails can be reduced even further by imposing higher-order (e.g. quartic) penalty on amplitudes far away from the orbital center~\cite{hoyvik2012orbital}.
 
